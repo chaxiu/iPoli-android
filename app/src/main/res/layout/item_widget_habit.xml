@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="60dp"
+    android:background="#BF303030"> <!-- BF = 75%  https://stackoverflow.com/a/11019879/ -->
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="AAAAAA"
+        android:textColor="@color/md_white" />
+
+</RelativeLayout>
