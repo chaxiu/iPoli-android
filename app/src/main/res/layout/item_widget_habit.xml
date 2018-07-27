@@ -6,21 +6,20 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:background="#BF303030"> <!-- BF = 75%  https://stackoverflow.com/a/11019879/ -->
+    android:padding="8dp"> <!-- BF = 75%  https://stackoverflow.com/a/11019879/ -->
 
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
         <ProgressBar
-            android:id="@+id/cProgress"
+            android:id="@+id/habitProgress"
             style="?android:attr/progressBarStyleHorizontal"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
             android:layout_gravity="center"
-            android:adjustViewBounds="true"
-            android:background="@drawable/item_challenge_progress_background"
-            android:progressDrawable="@drawable/item_challenge_progress" />
+            android:secondaryProgress="100"
+            android:progressDrawable="@drawable/widget_habit_progress" />
 
 
         <ImageView
@@ -28,19 +27,20 @@
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:layout_gravity="center"
-            android:src="@drawable/ic_heart_red_24dp" />
+            tools:src="@drawable/ic_heart_red_24dp" />
 
     </FrameLayout>
 
     <TextView
+        android:id="@+id/habitName"
         android:layout_width="match_parent"
-        android:layout_margin="8dp"
+        android:layout_marginTop="8dp"
         android:layout_height="wrap_content"
         android:ellipsize="end"
         android:maxLines="1"
         android:gravity="center"
-        android:textColor="@color/md_white"
-        android:text="Brush teeth" />
+        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
+        tools:text="Brush teeth" />
 
     <!--<io.ipoli.android.common.view.widget.CircleProgressBar-->
     <!--android:id="@+id/habitProgress"-->
