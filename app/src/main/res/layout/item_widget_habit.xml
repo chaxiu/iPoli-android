@@ -1,13 +1,72 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="60dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
     android:background="#BF303030"> <!-- BF = 75%  https://stackoverflow.com/a/11019879/ -->
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="AAAAAA"
-        android:textColor="@color/md_white" />
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
-</RelativeLayout>
+        <ProgressBar
+            android:id="@+id/cProgress"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_gravity="center"
+            android:adjustViewBounds="true"
+            android:background="@drawable/item_challenge_progress_background"
+            android:progressDrawable="@drawable/item_challenge_progress" />
+
+
+        <ImageView
+            android:id="@+id/habitIcon"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_heart_red_24dp" />
+
+    </FrameLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_margin="8dp"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:gravity="center"
+        android:textColor="@color/md_white"
+        android:text="Brush teeth" />
+
+    <!--<io.ipoli.android.common.view.widget.CircleProgressBar-->
+    <!--android:id="@+id/habitProgress"-->
+    <!--android:layout_width="124dp"-->
+    <!--android:layout_height="124dp"-->
+    <!--android:layout_gravity="center"-->
+    <!--app:progress_background_color="@color/md_green_100"-->
+    <!--app:progress_end_color="@color/md_green_500"-->
+    <!--app:progress_start_color="@color/md_green_500"-->
+    <!--app:progress_stroke_cap="round"-->
+    <!--app:style="solid_line"-->
+    <!--app:progress_stroke_width="8dp" />-->
+
+    <!--<io.ipoli.android.common.view.widget.CircleProgressBar-->
+    <!--android:id="@+id/habitTimesADayProgress"-->
+    <!--android:layout_width="132dp"-->
+    <!--android:layout_height="132dp"-->
+    <!--app:progress_background_color="@color/md_white"-->
+    <!--app:progress_end_color="@color/md_green_500"-->
+    <!--app:progress_start_color="@color/md_green_500"-->
+    <!--app:progress_stroke_cap="square"-->
+    <!--app:line_count="5"-->
+    <!--app:line_width="5dp"-->
+    <!--app:progress_stroke_width="8dp"-->
+    <!--app:layout_constraintBottom_toBottomOf="@+id/habitProgress"-->
+    <!--app:layout_constraintEnd_toEndOf="@+id/habitProgress"-->
+    <!--app:layout_constraintStart_toStartOf="@+id/habitProgress"-->
+    <!--app:layout_constraintTop_toTopOf="@+id/habitProgress"/>-->
+</LinearLayout>

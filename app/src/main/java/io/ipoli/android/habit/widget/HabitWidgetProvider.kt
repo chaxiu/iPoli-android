@@ -10,6 +10,7 @@ import io.ipoli.android.common.text.CalendarFormatter
 import io.ipoli.android.myPoliApp
 import org.threeten.bp.LocalDate
 import org.threeten.bp.format.TextStyle
+import timber.log.Timber
 import java.util.*
 
 /**
@@ -37,11 +38,14 @@ class HabitWidgetProvider : AppWidgetProvider() {
         val date = calendarFormatter.dateWithoutYear(today)
 
         appWidgetIds.forEach {
+            Timber.d("AAAA $it")
 
             val rv = RemoteViews(context.packageName, R.layout.widget_habits)
 
             rv.setTextViewText(R.id.widgetDayOfWeek, dayOfWeek)
             rv.setTextViewText(R.id.widgetDate, date)
+
+//            rv.addView()
 
 //            rv.setOnClickPendingIntent(R.id.widgetAgendaHeader, createStartAppIntent(context))
 //            rv.setOnClickPendingIntent(R.id.widgetAgendaPet, createShowPetIntent(context))
@@ -57,12 +61,13 @@ class HabitWidgetProvider : AppWidgetProvider() {
 //                createQuestClickIntent(context, it)
 //            )
 
+//            rv.setEmptyView(R.id.widgetHabitList, R.id.widgetHabitEmpty)
             rv.setEmptyView(R.id.widgetHabitList, R.id.widgetHabitEmpty)
 
             appWidgetManager.notifyAppWidgetViewDataChanged(it, R.id.widgetDayOfWeek)
             appWidgetManager.notifyAppWidgetViewDataChanged(it, R.id.widgetDate)
 
-            appWidgetManager.notifyAppWidgetViewDataChanged(it, R.id.widgetAgendaList)
+            appWidgetManager.notifyAppWidgetViewDataChanged(it, R.id.widgetHabitList)
             appWidgetManager.updateAppWidget(it, rv)
         }
 

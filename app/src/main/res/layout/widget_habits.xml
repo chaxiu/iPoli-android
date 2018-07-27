@@ -60,12 +60,26 @@
             <!--android:src="@drawable/ic_add_white_24dp" />-->
     </RelativeLayout>
 
-    <ListView
+    <!--<ListView-->
+    <!--android:id="@+id/widgetHabitList"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="match_parent"-->
+    <!--android:divider="@null"-->
+    <!--android:dividerHeight="0dp" />-->
+
+    <GridView
         android:id="@+id/widgetHabitList"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:divider="@null"
+        android:numColumns="2"
         android:dividerHeight="0dp" />
+
+    <!--<LinearLayout-->
+    <!--android:id="@+id/widgetHabitContainer"-->
+    <!--android:layout_width="wrap_content"-->
+    <!--android:layout_height="match_parent"-->
+    <!--android:orientation="horizontal"></LinearLayout>-->
 
     <TextView
         android:id="@+id/widgetHabitEmpty"
