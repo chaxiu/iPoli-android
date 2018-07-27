@@ -47,10 +47,10 @@ class HabitWidgetProvider : AppWidgetProvider() {
 //            rv.setOnClickPendingIntent(R.id.widgetAgendaPet, createShowPetIntent(context))
 //            rv.setOnClickPendingIntent(R.id.widgetAgendaAdd, createQuickAddIntent(context))
 //
-//            rv.setRemoteAdapter(
-//                R.id.widgetAgendaList,
-//                createQuestListIntent(context, it)
-//            )
+            rv.setRemoteAdapter(
+                R.id.widgetHabitList,
+                createHabitListIntent(context, it)
+            )
 //
 //            rv.setPendingIntentTemplate(
 //                R.id.widgetAgendaList,
@@ -69,4 +69,9 @@ class HabitWidgetProvider : AppWidgetProvider() {
         super.onUpdate(context, appWidgetManager, appWidgetIds)
 
     }
+
+    private fun createHabitListIntent(context: Context, widgetId: Int) =
+        Intent(context, HabitWidgetService::class.java).apply {
+            putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId)
+        }
 }

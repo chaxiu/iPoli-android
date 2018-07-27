@@ -101,6 +101,10 @@
                 android:resource="@xml/habit_widget_info" />
         </receiver>
 
+        <service
+            android:name="io.ipoli.android.habit.widget.HabitWidgetService"
+            android:permission="android.permission.BIND_REMOTEVIEWS" />
+
         <receiver
             android:name="io.ipoli.android.quest.receiver.CompleteQuestReceiver"
             android:exported="false" />
