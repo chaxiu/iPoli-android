@@ -42,8 +42,8 @@ class HabitWidgetProvider : AppWidgetProvider() {
 
             val rv = RemoteViews(context.packageName, R.layout.widget_habits)
 
-            rv.setTextViewText(R.id.widgetDayOfWeek, dayOfWeek)
-            rv.setTextViewText(R.id.widgetDate, date)
+//            rv.setTextViewText(R.id.widgetDayOfWeek, dayOfWeek)
+//            rv.setTextViewText(R.id.widgetDate, date)
 
 //            rv.addView()
 
@@ -64,8 +64,8 @@ class HabitWidgetProvider : AppWidgetProvider() {
 //            rv.setEmptyView(R.id.widgetHabitList, R.id.widgetHabitEmpty)
             rv.setEmptyView(R.id.widgetHabitList, R.id.widgetHabitEmpty)
 
-            appWidgetManager.notifyAppWidgetViewDataChanged(it, R.id.widgetDayOfWeek)
-            appWidgetManager.notifyAppWidgetViewDataChanged(it, R.id.widgetDate)
+//            appWidgetManager.notifyAppWidgetViewDataChanged(it, R.id.widgetDayOfWeek)
+//            appWidgetManager.notifyAppWidgetViewDataChanged(it, R.id.widgetDate)
 
             appWidgetManager.notifyAppWidgetViewDataChanged(it, R.id.widgetHabitList)
             appWidgetManager.updateAppWidget(it, rv)
