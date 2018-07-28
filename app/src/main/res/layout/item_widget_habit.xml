@@ -12,14 +12,20 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <ProgressBar
+        <!--<ProgressBar-->
+            <!--android:id="@+id/habitProgress"-->
+            <!--style="?android:attr/progressBarStyleHorizontal"-->
+            <!--android:layout_width="50dp"-->
+            <!--android:layout_height="50dp"-->
+            <!--android:layout_gravity="center"-->
+            <!--android:secondaryProgress="100"-->
+            <!--android:progressDrawable="@drawable/widget_habit_progress" />-->
+
+        <ImageView
             android:id="@+id/habitProgress"
-            style="?android:attr/progressBarStyleHorizontal"
             android:layout_width="50dp"
             android:layout_height="50dp"
-            android:layout_gravity="center"
-            android:secondaryProgress="100"
-            android:progressDrawable="@drawable/widget_habit_progress" />
+            android:layout_gravity="center" />
 
 
         <ImageView
@@ -28,6 +34,12 @@
             android:layout_height="24dp"
             android:layout_gravity="center"
             tools:src="@drawable/ic_heart_red_24dp" />
+
+        <ImageView
+            android:id="@+id/completedHabit"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_gravity="center" />
 
     </FrameLayout>
 
