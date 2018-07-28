@@ -1,5 +1,6 @@
 package io.ipoli.android.friends
 
+import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.support.annotation.DrawableRes
@@ -176,6 +177,8 @@ class ReactionHistoryDialogViewController(args: Bundle? = null) :
             Glide.with(view.context).load(vm.reactionImage)
                 .apply(RequestOptions.circleCropTransform())
                 .into(view.reactionImage)
+
+            (view.reactionImage.background as GradientDrawable).setColor(Color.WHITE)
 
             view.playerName.text = vm.name
             view.playerUsername.text = vm.username

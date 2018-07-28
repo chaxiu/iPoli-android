@@ -66,7 +66,10 @@ class HistoryChart @JvmOverloads constructor(
             val result = mutableListOf<RowData>()
 
             val shouldSplit =
-                start.monthValue != end.with(TemporalAdjusters.previousOrSame(DateUtils.firstDayOfWeek)).monthValue
+                start.monthValue != end.monthValue
+
+//            val shouldSplit =
+//                start.monthValue != end.with(TemporalAdjusters.previousOrSame(DateUtils.firstDayOfWeek)).monthValue
 
             val lastTopDay = start.plusWeeks(3).minusDays(1)
 
@@ -86,7 +89,7 @@ class HistoryChart @JvmOverloads constructor(
         private fun createForBottomSplit(): List<RowData> {
             val result = mutableListOf<RowData>()
 
-            val previousMonthLastDay = start.with(TemporalAdjusters.lastDayOfMonth())
+            val startMonthLastDay = start.with(TemporalAdjusters.lastDayOfMonth())
 
             result.addAll(
                 createCellsForWeeks(
@@ -105,18 +108,18 @@ class HistoryChart @JvmOverloads constructor(
                     result.add(RowData.CellRow(createCellsForWeek(currentWeekStart)))
                 }
 
-                if (currentWeekStart.weekOfMonth != currentWeekEnd.weekOfMonth) {
+                if (currentWeekStart.weekOfMonth != startMonthLastDay.weekOfMonth) {
                     result.add(
                         RowData.CellRow(
                             createWeekWithNoneCellsAtEnd(
-                                previousMonthLastDay
+                                startMonthLastDay
                             )
                         )
                     )
                 }
 
 
-                val nextMonthFirst = previousMonthLastDay.plusDays(1)
+                val nextMonthFirst = startMonthLastDay.plusDays(1)
 
                 result.addAll(createMonthWithWeekDaysRows(end.month))
 
@@ -139,11 +142,11 @@ class HistoryChart @JvmOverloads constructor(
                 result.add(
                     RowData.CellRow(
                         createWeekWithNoneCellsAtEnd(
-                            previousMonthLastDay
+                            startMonthLastDay
                         )
                     )
                 )
-                val nextMonthFirst = previousMonthLastDay.plusDays(1)
+                val nextMonthFirst = startMonthLastDay.plusDays(1)
 
                 result.addAll(createMonthWithWeekDaysRows(end.month))
 
@@ -241,13 +244,12 @@ class HistoryChart @JvmOverloads constructor(
 
         private fun createWithNoSplit(): List<RowData> {
             val result = mutableListOf<RowData>()
-            val firstOfMonth = currentDate.with(TemporalAdjusters.firstDayOfMonth())
             result.addAll(createMonthWithWeekDaysRows(currentDate.month))
 
             result.add(
                 RowData.CellRow(
                     createWeekWithNoneCellsAtStart(
-                        firstOfMonth
+                        start
                     )
                 )
             )
@@ -255,7 +257,7 @@ class HistoryChart @JvmOverloads constructor(
             result.addAll(
                 createCellsForWeeks(
                     weeksToAdd = 3,
-                    firstWeekStart = firstOfMonth.plusWeeks(1).with(
+                    firstWeekStart = start.plusWeeks(1).with(
                         TemporalAdjusters.previousOrSame(
                             DateUtils.firstDayOfWeek
                         )
