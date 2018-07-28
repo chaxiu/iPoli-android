@@ -6,12 +6,6 @@ import android.content.Context
 import android.content.Intent
 import android.widget.RemoteViews
 import io.ipoli.android.R
-import io.ipoli.android.common.text.CalendarFormatter
-import io.ipoli.android.myPoliApp
-import org.threeten.bp.LocalDate
-import org.threeten.bp.format.TextStyle
-import timber.log.Timber
-import java.util.*
 
 /**
  * Created by Polina Zhelyazkova <polina@mypoli.fun>
@@ -29,43 +23,15 @@ class HabitWidgetProvider : AppWidgetProvider() {
         appWidgetIds: IntArray
     ) {
 
-        val calendarFormatter = CalendarFormatter(myPoliApp.instance)
-
-        val today = LocalDate.now()
-        val dayOfWeek = today.dayOfWeek.getDisplayName(
-            TextStyle.FULL, Locale.getDefault()
-        )
-        val date = calendarFormatter.dateWithoutYear(today)
-
         appWidgetIds.forEach {
-            Timber.d("AAAA $it")
 
             val rv = RemoteViews(context.packageName, R.layout.widget_habits)
 
-//            rv.setTextViewText(R.id.widgetDayOfWeek, dayOfWeek)
-//            rv.setTextViewText(R.id.widgetDate, date)
-
-//            rv.addView()
-
-//            rv.setOnClickPendingIntent(R.id.widgetAgendaHeader, createStartAppIntent(context))
-//            rv.setOnClickPendingIntent(R.id.widgetAgendaPet, createShowPetIntent(context))
-//            rv.setOnClickPendingIntent(R.id.widgetAgendaAdd, createQuickAddIntent(context))
-//
             rv.setRemoteAdapter(
                 R.id.widgetHabitList,
                 createHabitListIntent(context, it)
             )
-//
-//            rv.setPendingIntentTemplate(
-//                R.id.widgetAgendaList,
-//                createQuestClickIntent(context, it)
-//            )
-
-//            rv.setEmptyView(R.id.widgetHabitList, R.id.widgetHabitEmpty)
             rv.setEmptyView(R.id.widgetHabitList, R.id.widgetHabitEmpty)
-
-//            appWidgetManager.notifyAppWidgetViewDataChanged(it, R.id.widgetDayOfWeek)
-//            appWidgetManager.notifyAppWidgetViewDataChanged(it, R.id.widgetDate)
 
             appWidgetManager.notifyAppWidgetViewDataChanged(it, R.id.widgetHabitList)
             appWidgetManager.updateAppWidget(it, rv)
