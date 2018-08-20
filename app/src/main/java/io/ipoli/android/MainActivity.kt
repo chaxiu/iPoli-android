@@ -30,6 +30,7 @@ import io.ipoli.android.common.view.Debounce
 import io.ipoli.android.common.view.playerTheme
 import io.ipoli.android.player.auth.AuthAction
 import io.ipoli.android.player.data.Membership
+import io.ipoli.android.quest.schedule.today.TodayViewController
 import io.ipoli.android.store.powerup.AndroidPowerUp
 import io.ipoli.android.store.powerup.buy.BuyPowerUpDialogController
 import io.ipoli.android.store.powerup.middleware.ShowBuyPowerUpAction
@@ -209,7 +210,8 @@ class MainActivity : AppCompatActivity(), Injects<UIModule>, SideEffectHandler<A
         } else if (intent.action == ACTION_PLAN_DAY) {
             navigator.setPlanDay()
         } else if (!router.hasRootController()) {
-            navigator.setHome()
+//            navigator.setHome()
+            router.setRoot(RouterTransaction.with(TodayViewController()))
 
             launch(CommonPool) {
                 val p = playerRepository.find()!!
