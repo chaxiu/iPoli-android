@@ -43,7 +43,7 @@ class TagViewController(args: Bundle? = null) :
 
     override val reducer = TagReducer
 
-    private lateinit var tagId: String
+    private var tagId = ""
     private var isFavorite: Boolean = false
 
     private constructor(tagId: String) : this() {
