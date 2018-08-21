@@ -1,16 +1,24 @@
 package io.ipoli.android.quest.schedule.today
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
 import android.content.res.ColorStateList
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.support.annotation.ColorRes
 import android.support.design.widget.AppBarLayout
 import android.support.v4.widget.TextViewCompat
+import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.LinearLayoutManager
 import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewAnimationUtils
 import android.view.ViewGroup
+import android.view.animation.AccelerateDecelerateInterpolator
 import android.widget.TextView
+import com.bluelinelabs.conductor.changehandler.VerticalChangeHandler
+import com.mikepenz.google_material_typeface_library.GoogleMaterial
+import com.mikepenz.iconics.IconicsDrawable
 import com.mikepenz.iconics.typeface.IIcon
 import io.ipoli.android.MainActivity
 import io.ipoli.android.R
@@ -21,6 +29,7 @@ import io.ipoli.android.common.view.recyclerview.MultiViewRecyclerViewAdapter
 import io.ipoli.android.common.view.recyclerview.RecyclerViewViewModel
 import kotlinx.android.synthetic.main.controller_today.view.*
 import kotlinx.android.synthetic.main.item_agenda_quest.view.*
+import kotlinx.android.synthetic.main.item_habit_list.view.*
 import org.threeten.bp.LocalDate
 import space.traversal.kapsule.required
 
@@ -67,8 +76,23 @@ class TodayViewController(args: Bundle? = null) :
             onError = { _ -> }
         )
 
-        view.todayItems.layoutManager = LinearLayoutManager(view.context)
-        view.todayItems.adapter = TodayItemAdapter()
+        view.questItems.layoutManager = LinearLayoutManager(view.context)
+        view.questItems.isNestedScrollingEnabled = false
+        view.questItems.adapter = TodayItemAdapter()
+
+        val gridLayoutManager = GridLayoutManager(view.context, 2)
+        view.habitItems.layoutManager = gridLayoutManager
+
+        val adapter = HabitListAdapter()
+        view.habitItems.adapter = adapter
+
+        gridLayoutManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
+            override fun getSpanSize(position: Int): Int =
+                when (adapter.getItemViewType(position)) {
+                    HabitViewType.SECTION.ordinal -> 2
+                    else -> 1
+                }
+        }
 
         view.backdropTransparentColor.background.alpha = (255f * 0.8).toInt()
 
@@ -78,7 +102,7 @@ class TodayViewController(args: Bundle? = null) :
     override fun onCreateLoadAction() = TodayAction.Load(LocalDate.now())
 
     override fun render(state: TodayViewState, view: View) {
-        (view.todayItems.adapter as TodayItemAdapter).updateAll(
+        (view.questItems.adapter as TodayItemAdapter).updateAll(
             listOf(
                 TodayItemViewModel.Section("Morning"),
                 TodayItemViewModel.QuestViewModel(
@@ -125,6 +149,40 @@ class TodayViewController(args: Bundle? = null) :
                 )
             )
         )
+
+        (view.habitItems.adapter as HabitListAdapter).updateAll(
+            listOf(
+                HabitItemViewModel.SectionItem("Habits"),
+                HabitItemViewModel.HabitItem(
+                    id = "1234567",
+                    name = "Brush teeth",
+                    icon = AndroidIcon.TOOTH.icon,
+                    color = AndroidColor.BLUE.color500,
+                    secondaryColor = AndroidColor.BLUE.color100,
+                    streak = 4,
+                    isBestStreak = true,
+                    timesADay = 4,
+                    progress = 4,
+                    maxProgress = 8,
+                    isCompleted = false,
+                    isGood = true
+                ),
+                HabitItemViewModel.HabitItem(
+                    id = "12345678",
+                    name = "Make the bed",
+                    icon = AndroidIcon.HOTEL.icon,
+                    color = AndroidColor.ORANGE.color500,
+                    secondaryColor = AndroidColor.ORANGE.color100,
+                    streak = 5,
+                    isBestStreak = true,
+                    timesADay = 2,
+                    progress = 4,
+                    maxProgress = 8,
+                    isCompleted = false,
+                    isGood = true
+                )
+            )
+        )
     }
 
     data class TagViewModel(val name: String, @ColorRes val color: Int)
@@ -144,7 +202,7 @@ class TodayViewController(args: Bundle? = null) :
         ) : TodayItemViewModel(id)
     }
 
-    enum class ViewType {
+    enum class QuestViewType {
         SECTION,
         QUEST,
         COMPLETED_QUEST
@@ -155,14 +213,14 @@ class TodayViewController(args: Bundle? = null) :
         override fun onRegisterItemBinders() {
 
             registerBinder<TodayItemViewModel.Section>(
-                ViewType.SECTION.ordinal,
+                QuestViewType.SECTION.ordinal,
                 R.layout.item_list_section
             ) { vm, view, _ ->
                 (view as TextView).text = vm.text
             }
 
             registerBinder<TodayItemViewModel.QuestViewModel>(
-                ViewType.QUEST.ordinal,
+                QuestViewType.QUEST.ordinal,
                 R.layout.item_agenda_quest
             ) { vm, view, _ ->
                 view.questName.text = vm.name
@@ -207,6 +265,251 @@ class TodayViewController(args: Bundle? = null) :
             )
         }
 
+    }
+
+    sealed class HabitItemViewModel(override val id: String) : RecyclerViewViewModel {
+        data class SectionItem(val text: String) : HabitItemViewModel(text)
+
+        data class HabitItem(
+            override val id: String,
+            val name: String,
+            val icon: IIcon,
+            @ColorRes val color: Int,
+            @ColorRes val secondaryColor: Int,
+            val streak: Int,
+            val isBestStreak: Boolean,
+            val timesADay: Int,
+            val progress: Int,
+            val maxProgress: Int,
+            val isCompleted: Boolean,
+            val isGood: Boolean
+        ) : HabitItemViewModel(id)
+    }
+
+    enum class HabitViewType {
+        SECTION,
+        HABIT
+    }
+
+    inner class HabitListAdapter :
+        MultiViewRecyclerViewAdapter<HabitItemViewModel>() {
+
+        override fun onRegisterItemBinders() {
+
+            registerBinder<HabitItemViewModel.SectionItem>(
+                HabitViewType.SECTION.ordinal,
+                R.layout.item_list_section
+            ) { vm, view, _ ->
+                (view as TextView).text = vm.text
+            }
+
+            registerBinder<HabitItemViewModel.HabitItem>(
+                HabitViewType.HABIT.ordinal,
+                R.layout.item_habit_list
+            ) { vm, view, _ ->
+
+                renderName(view, vm.name, vm.isGood)
+                renderIcon(view, vm.icon, if (vm.isCompleted) R.color.md_white else vm.color)
+                renderStreak(
+                    view = view,
+                    streak = vm.streak,
+                    isBestStreak = vm.isBestStreak,
+                    color = if (vm.isCompleted) R.color.md_white else vm.color,
+                    textColor = if (vm.isCompleted) R.color.md_white else R.color.md_dark_text_87
+                )
+                renderCompletedBackground(view, vm.color)
+
+                view.habitProgress.setProgressStartColor(colorRes(vm.color))
+                view.habitProgress.setProgressEndColor(colorRes(vm.color))
+                view.habitProgress.setProgressBackgroundColor(colorRes(vm.secondaryColor))
+                view.habitProgress.setProgressFormatter(null)
+                renderProgress(view, vm.progress, vm.maxProgress)
+
+                if (vm.timesADay > 1) {
+                    view.habitTimesADayProgress.visible()
+                    view.habitTimesADayProgress.setProgressStartColor(colorRes(R.color.md_white))
+                    view.habitTimesADayProgress.setProgressEndColor(colorRes(R.color.md_white))
+                    view.habitTimesADayProgress.setProgressFormatter(null)
+                    renderTimesADayProgress(view, vm.progress, vm.maxProgress)
+                } else {
+                    view.habitTimesADayProgress.gone()
+                }
+
+                val habitCompleteBackground = view.habitCompletedBackground
+                if (vm.isCompleted) {
+                    view.habitProgress.invisible()
+                    habitCompleteBackground.visible()
+                    view.habitCompletedBackground.setOnLongClickListener {
+                        navigateFromRoot().toEditHabit(vm.id, VerticalChangeHandler())
+                        return@setOnLongClickListener true
+                    }
+                    view.habitProgress.setOnLongClickListener(null)
+                } else {
+                    view.habitProgress.visible()
+                    habitCompleteBackground.invisible()
+                    view.habitProgress.setOnLongClickListener {
+                        navigateFromRoot().toEditHabit(vm.id, VerticalChangeHandler())
+                        return@setOnLongClickListener true
+                    }
+                    view.habitCompletedBackground.setOnLongClickListener(null)
+                }
+
+                view.habitProgress.onDebounceClick {
+                    val isLastProgress = vm.maxProgress - vm.progress == 1
+                    if (isLastProgress) {
+                        startCompleteAnimation(view, vm)
+                    } else {
+//                        dispatch(
+//                            if (vm.isGood) HabitListAction.CompleteHabit(vm.id)
+//                            else HabitListAction.UndoCompleteHabit(vm.id)
+//                        )
+                    }
+                }
+
+                view.habitCompletedBackground.onDebounceClick {
+                    startUndoCompleteAnimation(view, vm)
+                }
+            }
+
+        }
+
+        private fun renderCompletedBackground(
+            view: View,
+            color: Int
+        ): View? {
+            val habitCompleteBackground = view.habitCompletedBackground
+            val b = habitCompleteBackground.background as GradientDrawable
+            b.setColor(colorRes(color))
+            return habitCompleteBackground
+        }
+
+        private fun renderStreak(
+            view: View,
+            streak: Int,
+            isBestStreak: Boolean,
+            textColor: Int,
+            color: Int
+        ) {
+            view.habitStreak.text = streak.toString()
+            view.habitStreak.setTextColor(colorRes(textColor))
+            if (isBestStreak) {
+                view.habitBestProgressIndicator.visible()
+                view.habitBestProgressIndicator.setImageDrawable(
+                    IconicsDrawable(view.context).normalIcon(
+                        GoogleMaterial.Icon.gmd_star,
+                        color
+                    )
+                )
+            } else {
+                view.habitBestProgressIndicator.gone()
+            }
+        }
+
+        private fun renderIcon(
+            view: View,
+            icon: IIcon,
+            color: Int
+        ) {
+            view.habitIcon.setImageDrawable(
+                IconicsDrawable(view.context).normalIcon(icon, color)
+            )
+        }
+
+        private fun renderName(
+            view: View,
+            name: String,
+            isGood: Boolean
+        ) {
+
+            view.habitName.text = if (isGood) name else "\u2205 $name"
+        }
+
+        private fun renderProgress(
+            view: View,
+            progress: Int,
+            maxProgress: Int
+        ) {
+            view.habitProgress.max = maxProgress
+            view.habitProgress.progress = progress
+        }
+
+        private fun renderTimesADayProgress(
+            view: View,
+            progress: Int,
+            maxProgress: Int
+        ) {
+            view.habitTimesADayProgress.max = maxProgress
+            view.habitTimesADayProgress.setLineCount(maxProgress)
+            view.habitTimesADayProgress.progress = progress
+        }
+
+        private fun startUndoCompleteAnimation(
+            view: View,
+            vm: HabitItemViewModel.HabitItem
+        ) {
+            val hcb = view.habitCompletedBackground
+            val half = hcb.width / 2
+            val completeAnim = ViewAnimationUtils.createCircularReveal(
+                hcb,
+                half, half,
+                half.toFloat(), 0f
+            )
+            completeAnim.duration = shortAnimTime
+            completeAnim.interpolator = AccelerateDecelerateInterpolator()
+            completeAnim.addListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationStart(animation: Animator?) {
+                    view.habitProgress.visible()
+                }
+
+                override fun onAnimationEnd(animation: Animator?) {
+                    hcb.invisible()
+                    view.habitIcon.setImageDrawable(
+                        IconicsDrawable(view.context).normalIcon(vm.icon, vm.color)
+                    )
+                    view.habitStreak.setTextColor(colorRes(R.color.md_dark_text_87))
+                    renderProgress(view, vm.progress - 1, vm.maxProgress)
+                    renderTimesADayProgress(view, vm.progress - 1, vm.maxProgress)
+
+//                    dispatch(
+//                        if (vm.isGood) HabitListAction.UndoCompleteHabit(vm.id)
+//                        else HabitListAction.CompleteHabit(vm.id)
+//                    )
+                }
+            })
+            completeAnim.start()
+        }
+
+        private fun startCompleteAnimation(
+            view: View,
+            vm: HabitItemViewModel.HabitItem
+        ) {
+            val hcb = view.habitCompletedBackground
+            val half = hcb.width / 2
+            val completeAnim = ViewAnimationUtils.createCircularReveal(
+                hcb,
+                half, half,
+                0f, half.toFloat()
+            )
+            completeAnim.duration = shortAnimTime
+            completeAnim.interpolator = AccelerateDecelerateInterpolator()
+            completeAnim.addListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationStart(animation: Animator?) {
+                    hcb.visible()
+                }
+
+                override fun onAnimationEnd(animation: Animator?) {
+                    view.habitIcon.setImageDrawable(
+                        IconicsDrawable(view.context).normalIcon(vm.icon, R.color.md_white)
+                    )
+                    view.habitStreak.setTextColor(colorRes(R.color.md_white))
+//                    dispatch(
+//                        if (vm.isGood) HabitListAction.CompleteHabit(vm.id)
+//                        else HabitListAction.UndoCompleteHabit(vm.id)
+//                    )
+                }
+            })
+            completeAnim.start()
+        }
     }
 
 }
