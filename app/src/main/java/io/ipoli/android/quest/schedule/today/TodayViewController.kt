@@ -91,8 +91,38 @@ class TodayViewController(args: Bundle? = null) :
                     isRepeating = false,
                     isFromChallenge = false
                 ),
+                TodayItemViewModel.QuestViewModel(
+                    id = "12345",
+                    name = "Design the Today screen",
+                    tags = emptyList(),
+                    startTime = "10:15 - 12:00",
+                    color = AndroidColor.RED.color500,
+                    icon = AndroidIcon.BRIEFCASE.icon,
+                    isRepeating = false,
+                    isFromChallenge = true
+                ),
                 TodayItemViewModel.Section("Afternoon"),
-                TodayItemViewModel.Section("Evening")
+                TodayItemViewModel.QuestViewModel(
+                    id = "123456",
+                    name = "Lunch with Jim",
+                    tags = emptyList(),
+                    startTime = "12:30 - 14:00",
+                    color = AndroidColor.ORANGE.color500,
+                    icon = AndroidIcon.RESTAURANT.icon,
+                    isRepeating = false,
+                    isFromChallenge = false
+                ),
+                TodayItemViewModel.Section("Evening"),
+                TodayItemViewModel.QuestViewModel(
+                    id = "1234567",
+                    name = "Watch Deadpool 2",
+                    tags = emptyList(),
+                    startTime = "20:30 - 23:00",
+                    color = AndroidColor.PURPLE.color500,
+                    icon = AndroidIcon.CAMERA.icon,
+                    isRepeating = false,
+                    isFromChallenge = false
+                )
             )
         )
     }
