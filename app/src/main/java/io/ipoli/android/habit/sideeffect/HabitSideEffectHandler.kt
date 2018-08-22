@@ -9,6 +9,7 @@ import io.ipoli.android.habit.edit.EditHabitAction
 import io.ipoli.android.habit.edit.EditHabitViewState
 import io.ipoli.android.habit.list.HabitListAction
 import io.ipoli.android.habit.usecase.*
+import io.ipoli.android.quest.schedule.today.TodayAction
 import space.traversal.kapsule.required
 
 /**
@@ -48,10 +49,11 @@ object HabitSideEffectHandler : AppSideEffectHandler() {
             is EditHabitAction.Remove ->
                 removeHabitUseCase.execute(RemoveHabitUseCase.Params(action.habitId))
 
+            is TodayAction.Load ->
+                createHabitItemsFromState(state)
+
             is HabitListAction.Load ->
-                state.dataState.habits?.let {
-                    dispatchNewHabitItems(it)
-                }
+                createHabitItemsFromState(state)
 
             is DataLoadedAction.HabitsChanged ->
                 dispatchNewHabitItems(action.habits)
@@ -64,6 +66,12 @@ object HabitSideEffectHandler : AppSideEffectHandler() {
 
             else -> {
             }
+        }
+    }
+
+    private fun createHabitItemsFromState(state: AppState) {
+        state.dataState.habits?.let {
+            dispatchNewHabitItems(it)
         }
     }
 

@@ -32,6 +32,7 @@ import kotlinx.android.synthetic.main.item_agenda_quest.view.*
 import kotlinx.android.synthetic.main.item_habit_list.view.*
 import org.threeten.bp.LocalDate
 import space.traversal.kapsule.required
+import timber.log.Timber
 
 class TodayViewController(args: Bundle? = null) :
     ReduxViewController<TodayAction, TodayViewState, TodayReducer>(args = args) {
@@ -72,7 +73,9 @@ class TodayViewController(args: Bundle? = null) :
         imageLoader.loadMotivationalImage(
             imageUrl = "https://images.unsplash.com/photo-1500993855538-c6a99f437aa7?ixlib=rb-0.3.5&ixid=eyJhcHBfaWQiOjEyMDd9&s=72a0229d410f0e7c7701ebfc53b68a65&auto=format&fit=crop&w=1500&q=80",
             view = view.backdrop,
-            onReady = {},
+            onReady = {
+                Timber.d("AAA ready")
+            },
             onError = { _ -> }
         )
 
@@ -102,6 +105,15 @@ class TodayViewController(args: Bundle? = null) :
     override fun onCreateLoadAction() = TodayAction.Load(LocalDate.now())
 
     override fun render(state: TodayViewState, view: View) {
+
+        when (state.type) {
+            TodayViewState.StateType.HABITS_CHANGED -> {
+                (view.habitItems.adapter as HabitListAdapter).updateAll(state.habitItemViewModels)
+            }
+
+            else -> {}
+        }
+
         (view.questItems.adapter as TodayItemAdapter).updateAll(
             listOf(
                 TodayItemViewModel.Section("Morning"),
@@ -146,40 +158,6 @@ class TodayViewController(args: Bundle? = null) :
                     icon = AndroidIcon.CAMERA.icon,
                     isRepeating = false,
                     isFromChallenge = false
-                )
-            )
-        )
-
-        (view.habitItems.adapter as HabitListAdapter).updateAll(
-            listOf(
-                HabitItemViewModel.SectionItem("Habits"),
-                HabitItemViewModel.HabitItem(
-                    id = "1234567",
-                    name = "Brush teeth",
-                    icon = AndroidIcon.TOOTH.icon,
-                    color = AndroidColor.BLUE.color500,
-                    secondaryColor = AndroidColor.BLUE.color100,
-                    streak = 4,
-                    isBestStreak = true,
-                    timesADay = 4,
-                    progress = 4,
-                    maxProgress = 8,
-                    isCompleted = false,
-                    isGood = true
-                ),
-                HabitItemViewModel.HabitItem(
-                    id = "12345678",
-                    name = "Make the bed",
-                    icon = AndroidIcon.HOTEL.icon,
-                    color = AndroidColor.ORANGE.color500,
-                    secondaryColor = AndroidColor.ORANGE.color100,
-                    streak = 5,
-                    isBestStreak = true,
-                    timesADay = 2,
-                    progress = 4,
-                    maxProgress = 8,
-                    isCompleted = false,
-                    isGood = true
                 )
             )
         )
@@ -512,4 +490,23 @@ class TodayViewController(args: Bundle? = null) :
         }
     }
 
+    private val TodayViewState.habitItemViewModels: List<HabitItemViewModel.HabitItem>
+        get() =
+            todayHabitItems!!.map {
+                val habit = it.habit
+                HabitItemViewModel.HabitItem(
+                    id = habit.id,
+                    name = habit.name,
+                    color = habit.color.androidColor.color500,
+                    secondaryColor = habit.color.androidColor.color100,
+                    icon = habit.icon.androidIcon.icon,
+                    timesADay = habit.timesADay,
+                    isCompleted = it.isCompleted,
+                    isGood = habit.isGood,
+                    streak = habit.currentStreak,
+                    isBestStreak = it.isBestStreak,
+                    progress = it.completedCount,
+                    maxProgress = habit.timesADay
+                )
+            }
 }
