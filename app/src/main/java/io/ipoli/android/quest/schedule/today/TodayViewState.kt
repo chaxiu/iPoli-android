@@ -6,7 +6,7 @@ import io.ipoli.android.common.DataLoadedAction
 import io.ipoli.android.common.redux.Action
 import io.ipoli.android.common.redux.BaseViewState
 import io.ipoli.android.habit.usecase.CreateHabitItemsUseCase
-import io.ipoli.android.quest.Quest
+import io.ipoli.android.quest.schedule.today.usecase.CreateTodayItemsUseCase
 import org.threeten.bp.LocalDate
 
 sealed class TodayAction : Action {
@@ -20,18 +20,10 @@ object TodayReducer : BaseViewStateReducer<TodayViewState>() {
     override fun reduce(state: AppState, subState: TodayViewState, action: Action) =
         when (action) {
 
-            is TodayAction.Load ->
-                state.dataState.todayQuests?.let {
-                    subState.copy(
-                        type = TodayViewState.StateType.QUESTS_CHANGED,
-                        quests = it
-                    )
-                } ?: subState
-
-            is DataLoadedAction.TodayQuestsChanged ->
+            is DataLoadedAction.TodayQuestItemsChanged ->
                 subState.copy(
                     type = TodayViewState.StateType.QUESTS_CHANGED,
-                    quests = action.quests
+                    quests = action.questItems
                 )
 
             is DataLoadedAction.HabitItemsChanged ->
@@ -54,7 +46,7 @@ object TodayReducer : BaseViewStateReducer<TodayViewState>() {
 
 data class TodayViewState(
     val type: StateType,
-    val quests: List<Quest>?,
+    val quests: CreateTodayItemsUseCase.Result?,
     val todayHabitItems: List<CreateHabitItemsUseCase.HabitItem.Today>?
 ) :
     BaseViewState() {

@@ -9,6 +9,8 @@ import io.ipoli.android.note.usecase.SaveQuestNoteUseCase
 import io.ipoli.android.quest.CompletedQuestAction
 import io.ipoli.android.quest.Quest
 import io.ipoli.android.quest.schedule.summary.ScheduleSummaryAction
+import io.ipoli.android.quest.schedule.today.TodayAction
+import io.ipoli.android.quest.schedule.today.usecase.CreateTodayItemsUseCase
 import io.ipoli.android.quest.show.QuestAction
 import io.ipoli.android.quest.show.QuestReducer
 import io.ipoli.android.quest.show.QuestViewState
@@ -44,6 +46,7 @@ object QuestSideEffectHandler : AppSideEffectHandler() {
     private val removeQuestUseCase by required { removeQuestUseCase }
     private val undoRemoveQuestUseCase by required { undoRemoveQuestUseCase }
     private val notificationManager by required { notificationManager }
+    private val createTodayItemsUseCase by required { createTodayItemsUseCase }
 
     private var questChannel: Channel<Quest?>? = null
     private var completedQuestChannel: Channel<Quest?>? = null
@@ -182,6 +185,27 @@ object QuestSideEffectHandler : AppSideEffectHandler() {
 
             is ScheduleSummaryAction.UndoRemoveQuest ->
                 undoRemoveQuestUseCase.execute(action.questId)
+
+            is TodayAction.Load ->
+                state.dataState.todayQuests?.let {
+                    dispatch(
+                        DataLoadedAction.TodayQuestItemsChanged(
+                            createTodayItemsUseCase.execute(
+                                CreateTodayItemsUseCase.Params(it)
+                            )
+                        )
+                    )
+                }
+
+            is DataLoadedAction.TodayQuestsChanged ->
+                dispatch(
+                    DataLoadedAction.TodayQuestItemsChanged(
+                        createTodayItemsUseCase.execute(
+                            CreateTodayItemsUseCase.Params(action.quests)
+                        )
+                    )
+                )
+
         }
     }
 
@@ -253,5 +277,5 @@ object QuestSideEffectHandler : AppSideEffectHandler() {
         state.stateFor(QuestViewState::class.java)
 
     override fun canHandle(action: Action) =
-        action is QuestAction || action is CompletedQuestAction || action is ScheduleSummaryAction
+        action is QuestAction || action is CompletedQuestAction || action is ScheduleSummaryAction || action is TodayAction || action is DataLoadedAction
 }
