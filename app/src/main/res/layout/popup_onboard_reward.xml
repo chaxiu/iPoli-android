@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/popupQuestCompleteContainer"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/pet_message_background">
+
+    <ImageView
+        android:id="@+id/pet"
+        android:layout_width="42dp"
+        android:layout_height="42dp"
+        android:layout_alignParentStart="true"
+        android:layout_centerVertical="true"
+        android:layout_marginBottom="8dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:adjustViewBounds="true" />
+
+    <TextView
+        android:id="@+id/message"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_marginStart="16dp"
+        android:layout_toEndOf="@id/pet"
+        android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
+        android:textColor="@color/md_white" />
+
+    <TextView
+        android:id="@+id/earnedXP"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_marginEnd="16dp"
+        android:layout_toStartOf="@+id/earnedCoins"
+        android:drawablePadding="4dp"
+        android:drawableStart="@drawable/ic_star_yellow_24dp"
+        android:text="0"
+        android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
+        android:textColor="@color/md_white"
+        android:visibility="invisible"
+        tools:text="+64XP" />
+
+    <TextView
+        android:id="@+id/earnedCoins"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        android:layout_marginEnd="16dp"
+        android:drawablePadding="8dp"
+        android:drawableStart="@drawable/ic_life_coin_24dp"
+        android:text="0"
+        android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
+        android:textColor="@color/md_white"
+        android:visibility="invisible"
+        tools:text="+12 coins" />
+</RelativeLayout>

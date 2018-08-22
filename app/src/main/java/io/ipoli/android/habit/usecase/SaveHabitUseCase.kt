@@ -37,7 +37,8 @@ class SaveHabitUseCase(
                 days = parameters.days,
                 timesADay = parameters.timesADay,
                 isGood = parameters.isGood,
-                challengeId = parameters.challengeId
+                challengeId = parameters.challengeId,
+                note = parameters.note
             )
         } else {
             var h = habitRepository.findById(parameters.id)!!
@@ -52,11 +53,12 @@ class SaveHabitUseCase(
                 days = parameters.days,
                 timesADay = parameters.timesADay,
                 isGood = parameters.isGood,
-                challengeId = parameters.challengeId
+                challengeId = parameters.challengeId,
+                note = parameters.note
             )
 
             if (shouldUpdateTimesADay) {
-                handleRewardIfTimesADayUpdated(h, parameters.timesADay, parameters.player)
+                handleRewardIfTimesADayUpdated(h, parameters.timesADay, parameters.dateTime, parameters.player)
             } else h
 
         }
@@ -67,9 +69,9 @@ class SaveHabitUseCase(
     private fun handleRewardIfTimesADayUpdated(
         habit: Habit,
         timesADay: Int,
+        dateTime: LocalDateTime,
         player: Player?
     ): Habit {
-        val dateTime = LocalDateTime.now()
         val p = player ?: playerRepository.find()!!
         val date = p.currentDate(dateTime)
         val resetTime = p.preferences.resetDayTime
@@ -129,6 +131,8 @@ class SaveHabitUseCase(
         val timesADay: Int,
         val isGood: Boolean,
         val challengeId: String? = null,
-        val player: Player? = null
+        val note: String = "",
+        val player: Player? = null,
+        val dateTime: LocalDateTime = LocalDateTime.now()
     )
 }

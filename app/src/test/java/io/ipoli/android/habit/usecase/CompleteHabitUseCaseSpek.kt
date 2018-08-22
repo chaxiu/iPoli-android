@@ -6,6 +6,7 @@ import io.ipoli.android.common.SimpleReward
 import io.ipoli.android.common.datetime.Time
 import io.ipoli.android.habit.data.CompletedEntry
 import io.ipoli.android.habit.data.Habit
+import io.ipoli.android.player.data.Player
 import io.ipoli.android.player.usecase.RemoveRewardFromPlayerUseCase
 import io.ipoli.android.player.usecase.RewardPlayerUseCase
 import io.ipoli.android.quest.Quest
@@ -16,6 +17,7 @@ import org.jetbrains.spek.api.dsl.it
 import org.threeten.bp.DayOfWeek
 import org.threeten.bp.LocalDate
 import org.threeten.bp.LocalDateTime
+import org.threeten.bp.LocalTime
 
 /**
  * Created by Polina Zhelyazkova <polina@mypoli.fun>
@@ -31,13 +33,15 @@ class CompleteHabitUseCaseSpek : Spek({
             habit: Habit,
             date: LocalDateTime = LocalDateTime.now(),
             rewardPlayerUseCase: RewardPlayerUseCase = mock(),
-            removeRewardFromPlayerUseCase: RemoveRewardFromPlayerUseCase = mock()
+            removeRewardFromPlayerUseCase: RemoveRewardFromPlayerUseCase = mock(),
+            player: Player = TestUtil.player()
+
         ) =
             CompleteHabitUseCase(
                 TestUtil.habitRepoMock(
                     habit
                 ),
-                TestUtil.playerRepoMock(TestUtil.player()),
+                TestUtil.playerRepoMock(player),
                 mock(),
                 rewardPlayerUseCase,
                 removeRewardFromPlayerUseCase
@@ -254,6 +258,71 @@ class CompleteHabitUseCaseSpek : Spek({
                 Verify on removeRewardFromPlayerUseCaseMock that removeRewardFromPlayerUseCaseMock.execute(
                     reward
                 ) was called
+            }
+
+            it("should not give reward when completed before reset day time") {
+                val habit = TestUtil.habit.copy(
+                    timesADay = 2,
+                    isGood = true,
+                    history = mapOf(
+                        LocalDate.now() to CompletedEntry(
+                            completedAtTimes = listOf(
+                                Time.at(12, 15)
+                            )
+                        )
+                    )
+                )
+
+                val p = TestUtil.player().copy(
+                    preferences = TestUtil.player().preferences.copy(
+                        resetDayTime = Time.at(12, 30)
+                    )
+                )
+
+                val newHabit = executeUseCase(
+                    habit = habit,
+                    date = LocalDateTime.of(LocalDate.now(), LocalTime.of(12, 46)),
+                    player = p
+                )
+
+                newHabit.history.size.`should be`(1)
+                val ce = newHabit.history.values.first()
+                ce.completedAtTimes.size.`should be`(2)
+                ce.coins.`should be null`()
+                ce.experience.`should be null`()
+            }
+
+            it("should give reward when completed before and after reset day time") {
+                val habit = TestUtil.habit.copy(
+                    timesADay = 2,
+                    isGood = true,
+                    history = mapOf(
+                        LocalDate.now() to CompletedEntry(
+                            completedAtTimes = listOf(
+                                Time.at(12, 15),
+                                Time.at(12, 40)
+                            )
+                        )
+                    )
+                )
+
+                val p = TestUtil.player().copy(
+                    preferences = TestUtil.player().preferences.copy(
+                        resetDayTime = Time.at(12, 30)
+                    )
+                )
+
+                val newHabit = executeUseCase(
+                    habit = habit,
+                    date = LocalDateTime.of(LocalDate.now(), LocalTime.of(12, 45)),
+                    player = p
+                )
+
+                newHabit.history.size.`should be`(2)
+                val ce = newHabit.history.values.last()
+                ce.completedAtTimes.size.`should be`(0)
+                ce.coins.`should not be null`()
+                ce.experience.`should not be null`()
             }
         }
     }

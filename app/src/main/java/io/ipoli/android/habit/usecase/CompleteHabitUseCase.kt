@@ -2,6 +2,7 @@ package io.ipoli.android.habit.usecase
 
 import io.ipoli.android.common.SimpleReward
 import io.ipoli.android.common.UseCase
+import io.ipoli.android.common.datetime.toTime
 import io.ipoli.android.habit.HabitReward
 import io.ipoli.android.habit.data.CompletedEntry
 import io.ipoli.android.habit.data.Habit
@@ -45,7 +46,7 @@ class CompleteHabitUseCase(
             if (history.containsKey(date)) history[date]!!
             else CompletedEntry()
 
-        history[date] = completedEntry.complete()
+        history[date] = completedEntry.complete(dateTime.toTime())
 
         val isCompleted = habit.copy(
             history = history

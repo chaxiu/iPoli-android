@@ -39,7 +39,8 @@ object HabitSideEffectHandler : AppSideEffectHandler() {
                         days = s.days,
                         timesADay = s.timesADay,
                         isGood = s.isGood,
-                        challengeId = s.challenge?.id
+                        challengeId = s.challenge?.id,
+                        note = s.note
                     )
                 )
             }

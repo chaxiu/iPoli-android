@@ -48,12 +48,12 @@ data class Habit(
         var completedCount = 0
 
         history[startDate]?.let {
-            completedCount = it.completedAtTimes.count { t -> t >= resetDayTime }
+            completedCount += it.completedAtTimes.count { t -> t >= resetDayTime }
         }
 
         endDate?.let {
             history[it]?.let { ce ->
-                completedCount = ce.completedAtTimes.count { t -> t < resetDayTime }
+                completedCount += ce.completedAtTimes.count { t -> t < resetDayTime }
             }
         }
 

@@ -203,17 +203,40 @@ data class Player(
         fun datesSpan(
             dateTime: LocalDateTime = LocalDateTime.now(),
             resetDayTime: Time
-        ) =
-            when {
+        ): Pair<LocalDate, LocalDate?> {
+            val currentTime = Time.at(dateTime.toLocalTime().hour, dateTime.toLocalTime().minute)
+
+            return when {
                 resetDayTime == Time.atHours(0) -> Pair(dateTime.toLocalDate(), null)
 
                 resetDayTime.isBetween(
                     Time.atHours(0),
                     Time.at(11, 59)
-                ) -> Pair(dateTime.toLocalDate(), dateTime.plusDays(1).toLocalDate())
+                ) && currentTime < resetDayTime ->
+                    Pair(dateTime.minusDays(1).toLocalDate(), dateTime.toLocalDate())
 
-                else -> Pair(dateTime.minusDays(1).toLocalDate(), dateTime.toLocalDate())
+                resetDayTime.isBetween(
+                    Time.atHours(0),
+                    Time.at(11, 59)
+                ) && currentTime >= resetDayTime ->
+                    Pair(dateTime.toLocalDate(), dateTime.plusDays(1).toLocalDate())
+
+
+                resetDayTime.isBetween(
+                    Time.atHours(12),
+                    Time.at(23, 59)
+                ) && currentTime >= resetDayTime ->
+                    Pair(dateTime.toLocalDate(), dateTime.plusDays(1).toLocalDate())
+
+                resetDayTime.isBetween(
+                    Time.atHours(12),
+                    Time.at(23, 59)
+                ) && currentTime < resetDayTime ->
+                    Pair(dateTime.minusDays(1).toLocalDate(), dateTime.toLocalDate())
+
+                else -> throw IllegalStateException("Illegal resetDayTime and/or currentTime: $resetDayTime $currentTime ")
             }
+        }
     }
 }
 

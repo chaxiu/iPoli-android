@@ -68,6 +68,9 @@ val LocalDate.weekOfYear get() = get(DateUtils.weekOfYear)
 fun LocalDate.toLocalDateTime(time: Time = Time.now()): LocalDateTime =
     LocalDateTime.of(this, time.toLocalTime())
 
+fun LocalDateTime.toTime(): Time =
+    Time.at(this.hour, this.minute)
+
 fun LocalDateTime.toMillis(zoneId: ZoneId) = atZone(zoneId).toInstant().toEpochMilli()
 
 fun LocalDateTime.toMillis() = atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()

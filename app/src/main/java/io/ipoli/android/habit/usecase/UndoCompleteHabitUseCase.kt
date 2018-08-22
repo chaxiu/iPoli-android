@@ -40,14 +40,17 @@ class UndoCompleteHabitUseCase(
 
         val ced = if (endDate != null && history[endDate] != null) endDate else startDate
 
-        val ce = history[ced]!!.undoLastComplete()
-        history[ced] = ce
+        if(history[ced]!!.completedAtTimes.isNotEmpty()) {
+            history[ced] = history[ced]!!.undoLastComplete()
+        } else {
+            history[startDate] = history[startDate]!!.undoLastComplete()
+        }
 
         if (wasCompleted && habit.isGood) {
             removeRewardFromPlayerUseCase.execute(
                 SimpleReward(
-                    coins = ce.coins!!,
-                    experience = ce.experience!!,
+                    coins = history[ced]!!.coins!!,
+                    experience = history[ced]!!.experience!!,
                     bounty = Quest.Bounty.None
                 )
             )

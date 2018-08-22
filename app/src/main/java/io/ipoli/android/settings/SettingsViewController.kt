@@ -101,7 +101,7 @@ class SettingsViewController(args: Bundle? = null) :
 
     private fun renderResetDay(state: SettingsViewState, view: View) {
         view.resetDayTime.text = state.resetDayTime.toString(shouldUse24HourFormat)
-        view.resetDayTimeContainer.onDebounceClick {
+        view.resetDayTimeContainer.onDebounceClick { _ ->
 
             createTimePickerDialog(
                 startTime = state.resetDayTime,

@@ -307,7 +307,7 @@ class FirstQuestViewController(args: Bundle? = null) :
     ) {
 
         override fun createView(inflater: LayoutInflater): View =
-            inflater.inflate(R.layout.popup_reward, null)
+            inflater.inflate(R.layout.popup_onboard_reward, null)
 
         override fun onViewShown(contentView: View) {
             super.onViewShown(contentView)

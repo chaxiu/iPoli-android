@@ -12,10 +12,12 @@ import io.ipoli.android.habit.data.Habit
 import io.ipoli.android.habit.predefined.PredefinedHabit
 import io.ipoli.android.onboarding.OnboardViewController
 import io.ipoli.android.pet.Pet
+import io.ipoli.android.pet.PetAvatar
 import io.ipoli.android.player.auth.AuthAction
 import io.ipoli.android.player.auth.AuthViewState
 import io.ipoli.android.player.auth.UsernameValidator
 import io.ipoli.android.player.data.AuthProvider
+import io.ipoli.android.player.data.Avatar
 import io.ipoli.android.player.data.Player
 import io.ipoli.android.quest.Color
 import io.ipoli.android.quest.Icon
@@ -214,6 +216,13 @@ object AuthSideEffectHandler : AppSideEffectHandler() {
         state: AuthViewState
     ) {
 
+        val displayName = if (user.displayName != null) user.displayName!! else ""
+
+        saveNewPlayerData(state, user.uid, createAuthProvider(user), displayName)
+        dispatch(AuthAction.ShowSetUp)
+    }
+
+    private fun createAuthProvider(user: FirebaseUser): AuthProvider {
         val authProvider = if (user.providerData.size == 1) {
             user.providerData.first()
         } else {
@@ -233,11 +242,7 @@ object AuthSideEffectHandler : AppSideEffectHandler() {
 
             else -> throw IllegalStateException("Unknown Auth provider")
         }
-
-        val displayName = if (user.displayName != null) user.displayName!! else ""
-
-        saveNewPlayerData(state, user.uid, auth, displayName)
-        dispatch(AuthAction.ShowSetUp)
+        return auth
     }
 
     private fun createGuestPlayer(
@@ -258,6 +263,20 @@ object AuthSideEffectHandler : AppSideEffectHandler() {
         val petName =
             if (state.petName.isNullOrBlank()) Constants.DEFAULT_PET_NAME else state.petName!!
 
+        val tags =
+            savePlayerWithTags(playerId, auth, displayName, petName, petAvatar, state.playerAvatar)
+        saveRepeatingQuests(state.repeatingQuests, tags)
+        saveHabits(state.habits, tags)
+    }
+
+    private fun savePlayerWithTags(
+        playerId: String,
+        auth: AuthProvider?,
+        displayName: String,
+        petName: String,
+        petAvatar: PetAvatar,
+        playerAvatar: Avatar
+    ): List<Tag> {
         val player = Player(
             id = playerId,
             authProvider = auth,
@@ -266,15 +285,13 @@ object AuthSideEffectHandler : AppSideEffectHandler() {
             displayName = displayName,
             schemaVersion = Constants.SCHEMA_VERSION,
             pet = Pet(petName, petAvatar),
-            avatar = state.playerAvatar
+            avatar = playerAvatar
         )
 
         playerRepository.save(player)
         savePlayerId(playerId)
 
-        val tags = saveDefaultTags()
-        saveRepeatingQuests(state.repeatingQuests, tags)
-        saveHabits(state.habits, tags)
+        return saveDefaultTags()
     }
 
     private fun saveRepeatingQuests(
@@ -357,8 +374,30 @@ object AuthSideEffectHandler : AppSideEffectHandler() {
             dispatch(AuthAction.ShowImportDataError)
             return
         }
-        dispatch(AuthAction.ExistingPlayerLoggedIn)
-        prepareAppStart()
+
+        val p = playerRepository.find()
+
+        when {
+            p == null -> {
+                val user = FirebaseAuth.getInstance().currentUser!!
+
+                val displayName = if (user.displayName != null) user.displayName!! else ""
+                savePlayerWithTags(
+                    user.uid,
+                    createAuthProvider(user),
+                    displayName,
+                    Constants.DEFAULT_PET_NAME,
+                    Constants.DEFAULT_PET_AVATAR,
+                    Avatar.AVATAR_00
+                )
+                dispatch(AuthAction.ShowSetUp)
+            }
+            p.username.isNullOrBlank() -> dispatch(AuthAction.ShowSetUp)
+            else -> {
+                dispatch(AuthAction.ExistingPlayerLoggedIn)
+                prepareAppStart()
+            }
+        }
     }
 
     @SuppressLint("ApplySharedPref")
