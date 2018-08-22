@@ -91,14 +91,6 @@ class TodayViewController(args: Bundle? = null) :
         val adapter = HabitListAdapter()
         view.habitItems.adapter = adapter
 
-        gridLayoutManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
-            override fun getSpanSize(position: Int): Int =
-                when (adapter.getItemViewType(position)) {
-                    HabitViewType.SECTION.ordinal -> 2
-                    else -> 1
-                }
-        }
-
         view.completedQuests.layoutManager = LinearLayoutManager(view.context)
         view.completedQuests.isNestedScrollingEnabled = false
         view.completedQuests.adapter = CompletedQuestAdapter()
@@ -249,113 +241,87 @@ class TodayViewController(args: Bundle? = null) :
                 null
             )
         }
-
     }
 
-    sealed class HabitItemViewModel(override val id: String) : RecyclerViewViewModel {
-        data class SectionItem(val text: String) : HabitItemViewModel(text)
-
-        data class HabitItem(
-            override val id: String,
-            val name: String,
-            val icon: IIcon,
-            @ColorRes val color: Int,
-            @ColorRes val secondaryColor: Int,
-            val streak: Int,
-            val isBestStreak: Boolean,
-            val timesADay: Int,
-            val progress: Int,
-            val maxProgress: Int,
-            val isCompleted: Boolean,
-            val isGood: Boolean
-        ) : HabitItemViewModel(id)
-    }
-
-    enum class HabitViewType {
-        SECTION,
-        HABIT
-    }
+    data class HabitViewModel(
+        override val id: String,
+        val name: String,
+        val icon: IIcon,
+        @ColorRes val color: Int,
+        @ColorRes val secondaryColor: Int,
+        val streak: Int,
+        val isBestStreak: Boolean,
+        val timesADay: Int,
+        val progress: Int,
+        val maxProgress: Int,
+        val isCompleted: Boolean,
+        val isGood: Boolean
+    ) : RecyclerViewViewModel
 
     inner class HabitListAdapter :
-        MultiViewRecyclerViewAdapter<HabitItemViewModel>() {
+        BaseRecyclerViewAdapter<HabitViewModel>(R.layout.item_habit_list) {
+        override fun onBindViewModel(vm: HabitViewModel, view: View, holder: SimpleViewHolder) {
+            renderName(view, vm.name, vm.isGood)
+            renderIcon(view, vm.icon, if (vm.isCompleted) R.color.md_white else vm.color)
+            renderStreak(
+                view = view,
+                streak = vm.streak,
+                isBestStreak = vm.isBestStreak,
+                color = if (vm.isCompleted) R.color.md_white else vm.color,
+                textColor = if (vm.isCompleted) R.color.md_white else R.color.md_dark_text_87
+            )
+            renderCompletedBackground(view, vm.color)
 
-        override fun onRegisterItemBinders() {
+            view.habitProgress.setProgressStartColor(colorRes(vm.color))
+            view.habitProgress.setProgressEndColor(colorRes(vm.color))
+            view.habitProgress.setProgressBackgroundColor(colorRes(vm.secondaryColor))
+            view.habitProgress.setProgressFormatter(null)
+            renderProgress(view, vm.progress, vm.maxProgress)
 
-            registerBinder<HabitItemViewModel.SectionItem>(
-                HabitViewType.SECTION.ordinal,
-                R.layout.item_list_section
-            ) { vm, view, _ ->
-                (view as TextView).text = vm.text
+            if (vm.timesADay > 1) {
+                view.habitTimesADayProgress.visible()
+                view.habitTimesADayProgress.setProgressStartColor(colorRes(R.color.md_white))
+                view.habitTimesADayProgress.setProgressEndColor(colorRes(R.color.md_white))
+                view.habitTimesADayProgress.setProgressFormatter(null)
+                renderTimesADayProgress(view, vm.progress, vm.maxProgress)
+            } else {
+                view.habitTimesADayProgress.gone()
             }
 
-            registerBinder<HabitItemViewModel.HabitItem>(
-                HabitViewType.HABIT.ordinal,
-                R.layout.item_habit_list
-            ) { vm, view, _ ->
-
-                renderName(view, vm.name, vm.isGood)
-                renderIcon(view, vm.icon, if (vm.isCompleted) R.color.md_white else vm.color)
-                renderStreak(
-                    view = view,
-                    streak = vm.streak,
-                    isBestStreak = vm.isBestStreak,
-                    color = if (vm.isCompleted) R.color.md_white else vm.color,
-                    textColor = if (vm.isCompleted) R.color.md_white else R.color.md_dark_text_87
-                )
-                renderCompletedBackground(view, vm.color)
-
-                view.habitProgress.setProgressStartColor(colorRes(vm.color))
-                view.habitProgress.setProgressEndColor(colorRes(vm.color))
-                view.habitProgress.setProgressBackgroundColor(colorRes(vm.secondaryColor))
-                view.habitProgress.setProgressFormatter(null)
-                renderProgress(view, vm.progress, vm.maxProgress)
-
-                if (vm.timesADay > 1) {
-                    view.habitTimesADayProgress.visible()
-                    view.habitTimesADayProgress.setProgressStartColor(colorRes(R.color.md_white))
-                    view.habitTimesADayProgress.setProgressEndColor(colorRes(R.color.md_white))
-                    view.habitTimesADayProgress.setProgressFormatter(null)
-                    renderTimesADayProgress(view, vm.progress, vm.maxProgress)
-                } else {
-                    view.habitTimesADayProgress.gone()
+            val habitCompleteBackground = view.habitCompletedBackground
+            if (vm.isCompleted) {
+                view.habitProgress.invisible()
+                habitCompleteBackground.visible()
+                view.habitCompletedBackground.setOnLongClickListener {
+                    navigateFromRoot().toEditHabit(vm.id, VerticalChangeHandler())
+                    return@setOnLongClickListener true
                 }
-
-                val habitCompleteBackground = view.habitCompletedBackground
-                if (vm.isCompleted) {
-                    view.habitProgress.invisible()
-                    habitCompleteBackground.visible()
-                    view.habitCompletedBackground.setOnLongClickListener {
-                        navigateFromRoot().toEditHabit(vm.id, VerticalChangeHandler())
-                        return@setOnLongClickListener true
-                    }
-                    view.habitProgress.setOnLongClickListener(null)
-                } else {
-                    view.habitProgress.visible()
-                    habitCompleteBackground.invisible()
-                    view.habitProgress.setOnLongClickListener {
-                        navigateFromRoot().toEditHabit(vm.id, VerticalChangeHandler())
-                        return@setOnLongClickListener true
-                    }
-                    view.habitCompletedBackground.setOnLongClickListener(null)
+                view.habitProgress.setOnLongClickListener(null)
+            } else {
+                view.habitProgress.visible()
+                habitCompleteBackground.invisible()
+                view.habitProgress.setOnLongClickListener {
+                    navigateFromRoot().toEditHabit(vm.id, VerticalChangeHandler())
+                    return@setOnLongClickListener true
                 }
+                view.habitCompletedBackground.setOnLongClickListener(null)
+            }
 
-                view.habitProgress.onDebounceClick {
-                    val isLastProgress = vm.maxProgress - vm.progress == 1
-                    if (isLastProgress) {
-                        startCompleteAnimation(view, vm)
-                    } else {
+            view.habitProgress.onDebounceClick {
+                val isLastProgress = vm.maxProgress - vm.progress == 1
+                if (isLastProgress) {
+                    startCompleteAnimation(view, vm)
+                } else {
 //                        dispatch(
 //                            if (vm.isGood) HabitListAction.CompleteHabit(vm.id)
 //                            else HabitListAction.UndoCompleteHabit(vm.id)
 //                        )
-                    }
-                }
-
-                view.habitCompletedBackground.onDebounceClick {
-                    startUndoCompleteAnimation(view, vm)
                 }
             }
 
+            view.habitCompletedBackground.onDebounceClick {
+                startUndoCompleteAnimation(view, vm)
+            }
         }
 
         private fun renderCompletedBackground(
@@ -430,7 +396,7 @@ class TodayViewController(args: Bundle? = null) :
 
         private fun startUndoCompleteAnimation(
             view: View,
-            vm: HabitItemViewModel.HabitItem
+            vm: HabitViewModel
         ) {
             val hcb = view.habitCompletedBackground
             val half = hcb.width / 2
@@ -466,7 +432,7 @@ class TodayViewController(args: Bundle? = null) :
 
         private fun startCompleteAnimation(
             view: View,
-            vm: HabitItemViewModel.HabitItem
+            vm: HabitViewModel
         ) {
             val hcb = view.habitCompletedBackground
             val half = hcb.width / 2
@@ -501,7 +467,7 @@ class TodayViewController(args: Bundle? = null) :
 
     inner class CompletedQuestAdapter :
         BaseRecyclerViewAdapter<CompletedQuestViewModel>(R.layout.item_agenda_quest) {
-        
+
         override fun onBindViewModel(
             vm: CompletedQuestViewModel,
             view: View,
@@ -512,11 +478,11 @@ class TodayViewController(args: Bundle? = null) :
 
     }
 
-    private val TodayViewState.habitItemViewModels: List<HabitItemViewModel.HabitItem>
+    private val TodayViewState.habitItemViewModels: List<HabitViewModel>
         get() =
             todayHabitItems!!.map {
                 val habit = it.habit
-                HabitItemViewModel.HabitItem(
+                HabitViewModel(
                     id = habit.id,
                     name = habit.name,
                     color = habit.color.androidColor.color500,
