@@ -20,15 +20,18 @@ import com.bluelinelabs.conductor.changehandler.VerticalChangeHandler
 import com.mikepenz.google_material_typeface_library.GoogleMaterial
 import com.mikepenz.iconics.IconicsDrawable
 import com.mikepenz.iconics.typeface.IIcon
+import com.mikepenz.ionicons_typeface_library.Ionicons
 import io.ipoli.android.MainActivity
 import io.ipoli.android.R
 import io.ipoli.android.common.ViewUtils
 import io.ipoli.android.common.redux.android.ReduxViewController
+import io.ipoli.android.common.text.QuestStartTimeFormatter
 import io.ipoli.android.common.view.*
 import io.ipoli.android.common.view.recyclerview.BaseRecyclerViewAdapter
 import io.ipoli.android.common.view.recyclerview.MultiViewRecyclerViewAdapter
 import io.ipoli.android.common.view.recyclerview.RecyclerViewViewModel
 import io.ipoli.android.common.view.recyclerview.SimpleViewHolder
+import io.ipoli.android.quest.schedule.today.usecase.CreateTodayItemsUseCase
 import kotlinx.android.synthetic.main.controller_today.view.*
 import kotlinx.android.synthetic.main.item_agenda_quest.view.*
 import kotlinx.android.synthetic.main.item_habit_list.view.*
@@ -109,57 +112,13 @@ class TodayViewController(args: Bundle? = null) :
                 (view.habitItems.adapter as HabitListAdapter).updateAll(state.habitItemViewModels)
             }
 
+            TodayViewState.StateType.QUESTS_CHANGED -> {
+                (view.questItems.adapter as TodayItemAdapter).updateAll(state.questItemViewModels)
+            }
+
             else -> {
             }
         }
-
-        (view.questItems.adapter as TodayItemAdapter).updateAll(
-            listOf(
-                TodayItemViewModel.Section("Morning"),
-                TodayItemViewModel.QuestViewModel(
-                    id = "1234",
-                    name = "Do the laundry",
-                    tags = emptyList(),
-                    startTime = "9:30 - 10:00",
-                    color = AndroidColor.BLUE.color500,
-                    icon = AndroidIcon.WASHING_MACHINE.icon,
-                    isRepeating = false,
-                    isFromChallenge = false
-                ),
-                TodayItemViewModel.QuestViewModel(
-                    id = "12345",
-                    name = "Design the Today screen",
-                    tags = emptyList(),
-                    startTime = "10:15 - 12:00",
-                    color = AndroidColor.RED.color500,
-                    icon = AndroidIcon.BRIEFCASE.icon,
-                    isRepeating = false,
-                    isFromChallenge = true
-                ),
-                TodayItemViewModel.Section("Afternoon"),
-                TodayItemViewModel.QuestViewModel(
-                    id = "123456",
-                    name = "Lunch with Jim",
-                    tags = emptyList(),
-                    startTime = "12:30 - 14:00",
-                    color = AndroidColor.ORANGE.color500,
-                    icon = AndroidIcon.RESTAURANT.icon,
-                    isRepeating = false,
-                    isFromChallenge = false
-                ),
-                TodayItemViewModel.Section("Evening"),
-                TodayItemViewModel.QuestViewModel(
-                    id = "1234567",
-                    name = "Watch Deadpool 2",
-                    tags = emptyList(),
-                    startTime = "20:30 - 23:00",
-                    color = AndroidColor.PURPLE.color500,
-                    icon = AndroidIcon.CAMERA.icon,
-                    isRepeating = false,
-                    isFromChallenge = false
-                )
-            )
-        )
     }
 
     data class TagViewModel(val name: String, @ColorRes val color: Int)
@@ -475,8 +434,49 @@ class TodayViewController(args: Bundle? = null) :
         ) {
 
         }
-
     }
+
+    private val TodayViewState.questItemViewModels: List<TodayItemViewModel>
+        get() =
+            quests!!.incomplete.map {
+                when (it) {
+                    is CreateTodayItemsUseCase.TodayItem.UnscheduledSection ->
+                        TodayItemViewModel.Section(stringRes(R.string.unscheduled))
+
+                    is CreateTodayItemsUseCase.TodayItem.MorningSection ->
+                        TodayItemViewModel.Section(stringRes(R.string.morning))
+
+                    is CreateTodayItemsUseCase.TodayItem.AfternoonSection ->
+                        TodayItemViewModel.Section(stringRes(R.string.afternoon))
+
+                    is CreateTodayItemsUseCase.TodayItem.EveningSection ->
+                        TodayItemViewModel.Section(stringRes(R.string.evening))
+
+                    is CreateTodayItemsUseCase.TodayItem.QuestItem -> {
+                        val quest = it.quest
+                        TodayItemViewModel.QuestViewModel(
+                            id = quest.id,
+                            name = quest.name,
+                            tags = quest.tags.map { t ->
+                                TagViewModel(
+                                    t.name,
+                                    AndroidColor.valueOf(t.color.name).color500
+                                )
+                            },
+                            startTime = QuestStartTimeFormatter.formatWithDuration(
+                                quest,
+                                activity!!,
+                                shouldUse24HourFormat
+                            ),
+                            color = quest.color.androidColor.color500,
+                            icon = quest.icon?.let { ic -> AndroidIcon.valueOf(ic.name).icon }
+                                ?: Ionicons.Icon.ion_android_clipboard,
+                            isRepeating = quest.isFromRepeatingQuest,
+                            isFromChallenge = quest.isFromChallenge
+                        )
+                    }
+                }
+            }
 
     private val TodayViewState.habitItemViewModels: List<HabitViewModel>
         get() =
