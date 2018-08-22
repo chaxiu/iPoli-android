@@ -125,6 +125,7 @@ import io.ipoli.android.quest.schedule.agenda.usecase.FindAgendaDatesUseCase
 import io.ipoli.android.quest.schedule.calendar.sideeffect.DayViewSideEffectHandler
 import io.ipoli.android.quest.schedule.summary.sideeffect.ScheduleSummarySideEffectHandler
 import io.ipoli.android.quest.schedule.summary.usecase.CreateScheduleSummaryUseCase
+import io.ipoli.android.quest.schedule.today.usecase.CreateTodayItemsUseCase
 import io.ipoli.android.quest.show.job.AndroidJobTimerCompleteScheduler
 import io.ipoli.android.quest.show.job.TimerCompleteScheduler
 import io.ipoli.android.quest.show.sideeffect.QuestSideEffectHandler
@@ -402,6 +403,7 @@ interface UseCaseModule {
     val createReactionHistoryItemsUseCase: CreateReactionHistoryItemsUseCase
     val logDataUseCase: LogDataUseCase
     val saveResetDayTimeUseCase: SaveResetDayTimeUseCase
+    val createTodayItemsUseCase: CreateTodayItemsUseCase
 }
 
 class MainUseCaseModule(private val context: Context) : UseCaseModule {
@@ -910,6 +912,9 @@ class MainUseCaseModule(private val context: Context) : UseCaseModule {
 
     override val saveResetDayTimeUseCase
         get() = SaveResetDayTimeUseCase(playerRepository, resetDayScheduler)
+
+    override val createTodayItemsUseCase
+        get() = CreateTodayItemsUseCase()
 }
 
 interface StateStoreModule {
