@@ -25,6 +25,7 @@ import java.util.*
  * on 03/07/2018.
  */
 interface ChallengeRepository : CollectionRepository<Challenge> {
+    fun findForFriend(friendId: String): List<Challenge>
 }
 
 @Dao
@@ -61,12 +62,19 @@ abstract class ChallengeDao : BaseDao<RoomChallenge>() {
     abstract fun findAllForSync(lastSync: Long): List<RoomChallenge>
 }
 
-class RoomChallengeRepository(dao: ChallengeDao, private val tagDao: TagDao) : ChallengeRepository,
+class RoomChallengeRepository(
+    dao: ChallengeDao,
+    private val tagDao: TagDao,
+    private val remoteDatabase: FirebaseFirestore
+) : ChallengeRepository,
     BaseRoomRepositoryWithTags<Challenge, RoomChallenge, ChallengeDao, RoomChallenge.Companion.RoomTagJoin>(
         dao
     ) {
 
     private val tagMapper = RoomTagMapper()
+
+    override fun findForFriend(friendId: String) =
+        FirestoreChallengeRepository(remoteDatabase).findSharedForFriend(friendId)
 
     override fun findAllForSync(lastSync: Duration<Millisecond>) =
         dao.findAllForSync(lastSync.millisValue).map { toEntityObject(it) }
@@ -336,11 +344,18 @@ class FirestoreChallengeRepository(
     database
 ) {
 
-
     override val collectionReference: CollectionReference
         get() {
             return database.collection("players").document(playerId).collection("challenges")
         }
+
+    fun findSharedForFriend(friendId: String) =
+        database
+            .collection("players")
+            .document(friendId)
+            .collection("challenges")
+            .whereEqualTo("sharingPreference", SharingPreference.FRIENDS.name)
+            .notRemovedEntities
 
     override fun toEntityObject(dataMap: MutableMap<String, Any?>): Challenge {
         if (!dataMap.containsKey("sharingPreference")) {

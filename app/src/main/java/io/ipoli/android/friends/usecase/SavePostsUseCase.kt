@@ -91,6 +91,30 @@ open class SavePostsUseCase(
                 }
             }
 
+            is Params.QuestFromChallengeComplete -> {
+                val q = parameters.quest
+                val challenge = parameters.challenge
+                savePost(
+                    player = player, data = if (q.hasPomodoroTimer) {
+                        Post.Data.QuestWithPomodoroFromChallengeCompleted(
+                            questId = q.id,
+                            challengeId = challenge.id,
+                            questName = q.name,
+                            challengeName = challenge.name,
+                            pomodoroCount = q.totalPomodoros!!
+                        )
+                    } else {
+                        Post.Data.QuestFromChallengeCompleted(
+                            questId = q.id,
+                            challengeId = challenge.id,
+                            questName = q.name,
+                            challengeName = challenge.name,
+                            durationTracked = if (q.hasTimer) q.actualDuration.asMinutes else 0.minutes
+                        )
+                    }
+                )
+            }
+
             is Params.ChallengesShared -> {
                 challengeRepository.save(parameters.challenges.map { it.copy(sharingPreference = SharingPreference.FRIENDS) })
                 parameters.challenges.forEach {
@@ -145,6 +169,12 @@ open class SavePostsUseCase(
             Params()
 
         data class QuestsComplete(val quests: List<Quest>, override val player: Player?) : Params()
+
+        data class QuestFromChallengeComplete(
+            val quest: Quest,
+            val challenge: Challenge,
+            override val player: Player?
+        ) : Params()
 
         data class ChallengesShared(val challenges: List<Challenge>, override val player: Player?) :
             Params()

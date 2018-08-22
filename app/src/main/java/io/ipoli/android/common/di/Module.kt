@@ -16,6 +16,7 @@ import io.ipoli.android.achievement.sideeffect.AchievementListSideEffectHandler
 import io.ipoli.android.achievement.usecase.CreateAchievementItemsUseCase
 import io.ipoli.android.achievement.usecase.UnlockAchievementsUseCase
 import io.ipoli.android.achievement.usecase.UpdateAchievementProgressUseCase
+import io.ipoli.android.achievement.usecase.UpdatePlayerStatsUseCase
 import io.ipoli.android.challenge.persistence.ChallengeRepository
 import io.ipoli.android.challenge.persistence.RoomChallengeRepository
 import io.ipoli.android.challenge.predefined.usecase.SchedulePredefinedChallengeUseCase
@@ -404,6 +405,7 @@ interface UseCaseModule {
     val logDataUseCase: LogDataUseCase
     val saveResetDayTimeUseCase: SaveResetDayTimeUseCase
     val createTodayItemsUseCase: CreateTodayItemsUseCase
+    val updatePlayerStatsUseCase: UpdatePlayerStatsUseCase
 }
 
 class MainUseCaseModule(private val context: Context) : UseCaseModule {
@@ -443,7 +445,8 @@ class MainUseCaseModule(private val context: Context) : UseCaseModule {
     override val challengeRepository =
         RoomChallengeRepository(
             dao = localDatabase.challengeDao(),
-            tagDao = localDatabase.tagDao()
+            tagDao = localDatabase.tagDao(),
+            remoteDatabase = remoteDatabase
         )
 
     override val eventRepository =
@@ -562,11 +565,17 @@ class MainUseCaseModule(private val context: Context) : UseCaseModule {
             reminderScheduler,
             removeRewardFromPlayerUseCase
         )
-    override val rewardPlayerUseCase get() = RewardPlayerUseCase(playerRepository, levelUpScheduler)
+    override val rewardPlayerUseCase
+        get() = RewardPlayerUseCase(
+            playerRepository,
+            levelUpScheduler,
+            unlockAchievementsUseCase
+        )
     override val removeRewardFromPlayerUseCase
         get() = RemoveRewardFromPlayerUseCase(
             playerRepository,
-            levelDownScheduler
+            levelDownScheduler,
+            unlockAchievementsUseCase
         )
     override val feedPetUseCase get() = FeedPetUseCase(playerRepository)
     override val revivePetUseCase get() = RevivePetUseCase(playerRepository)
@@ -845,10 +854,14 @@ class MainUseCaseModule(private val context: Context) : UseCaseModule {
     override val saveProfileUseCase
         get() = SaveProfileUseCase(playerRepository)
 
+    override val updatePlayerStatsUseCase
+        get() = UpdatePlayerStatsUseCase(playerRepository)
+
     override val unlockAchievementsUseCase
         get() = UnlockAchievementsUseCase(
             playerRepository,
             showUnlockedAchievementsScheduler,
+            updatePlayerStatsUseCase,
             savePostsUseCase
         )
 
@@ -856,7 +869,8 @@ class MainUseCaseModule(private val context: Context) : UseCaseModule {
         get() = UpdateAchievementProgressUseCase(
             playerRepository,
             calculateAwesomenessScoreUseCase,
-            calculateFocusDurationUseCase
+            calculateFocusDurationUseCase,
+            friendRepository
         )
 
     override val createAchievementItemsUseCase

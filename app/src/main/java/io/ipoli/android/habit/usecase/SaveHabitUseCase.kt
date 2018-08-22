@@ -43,9 +43,11 @@ class SaveHabitUseCase(
         } else {
             var h = habitRepository.findById(parameters.id)!!
 
-            val shouldUpdateTimesADay = h.timesADay != parameters.timesADay
+            if(h.timesADay != parameters.timesADay) {
+                h = handleRewardIfTimesADayUpdated(h, parameters.timesADay, parameters.dateTime, parameters.player)
+            }
 
-            h = h.copy(
+            h.copy(
                 name = parameters.name,
                 color = parameters.color,
                 icon = parameters.icon,
@@ -56,11 +58,6 @@ class SaveHabitUseCase(
                 challengeId = parameters.challengeId,
                 note = parameters.note
             )
-
-            if (shouldUpdateTimesADay) {
-                handleRewardIfTimesADayUpdated(h, parameters.timesADay, parameters.dateTime, parameters.player)
-            } else h
-
         }
 
         return habitRepository.save(habit)
@@ -107,7 +104,7 @@ class SaveHabitUseCase(
             )
         }
 
-        if (completedCountForDate < timesADay) {
+        if (habit.isCompletedFor(dateTime, resetTime)) {
             val history = habit.history
             removeRewardFromPlayerUseCase.execute(
                 SimpleReward(

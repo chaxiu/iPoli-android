@@ -2,6 +2,8 @@ package io.ipoli.android.quest.job
 
 import android.content.Context
 import io.ipoli.android.MyPoliApp
+import io.ipoli.android.achievement.usecase.UnlockAchievementsUseCase
+import io.ipoli.android.achievement.usecase.UpdatePlayerStatsUseCase
 import io.ipoli.android.common.Reward
 import io.ipoli.android.common.di.BackgroundModule
 import io.ipoli.android.common.view.asThemedWrapper
@@ -39,6 +41,7 @@ class AndroidJobRewardScheduler(private val context: Context) : RewardScheduler 
         val playerRepository by kap.required { playerRepository }
         val undoCompletedQuestUseCase by kap.required { undoCompletedQuestUseCase }
         val undoCompleteHabitUseCase by kap.required { undoCompleteHabitUseCase }
+        val unlockAchievementsUseCase by kap.required { unlockAchievementsUseCase }
         kap.inject(MyPoliApp.backgroundModule(context))
 
         val bounty = reward.bounty
@@ -58,8 +61,15 @@ class AndroidJobRewardScheduler(private val context: Context) : RewardScheduler 
                 undoListener = {
                     launch(CommonPool) {
                         when (type) {
-                            RewardScheduler.Type.QUEST ->
+                            RewardScheduler.Type.QUEST -> {
                                 undoCompletedQuestUseCase.execute(entityId)
+                                unlockAchievementsUseCase.execute(
+                                    UnlockAchievementsUseCase.Params(
+                                        player = playerRepository.find()!!,
+                                        eventType = UpdatePlayerStatsUseCase.Params.EventType.QuestUncompleted
+                                    )
+                                )
+                            }
                             RewardScheduler.Type.HABIT ->
                                 undoCompleteHabitUseCase.execute(
                                     UndoCompleteHabitUseCase.Params(

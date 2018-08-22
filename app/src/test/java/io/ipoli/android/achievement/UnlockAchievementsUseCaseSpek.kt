@@ -2,7 +2,8 @@ package io.ipoli.android.achievement
 
 import io.ipoli.android.TestUtil
 import io.ipoli.android.achievement.usecase.UnlockAchievementsUseCase
-import io.ipoli.android.achievement.usecase.UnlockAchievementsUseCase.Params
+import io.ipoli.android.achievement.usecase.UpdatePlayerStatsUseCase
+import io.ipoli.android.achievement.usecase.UpdatePlayerStatsUseCase.Params
 import io.ipoli.android.pet.Food
 import io.ipoli.android.player.data.Player
 import io.ipoli.android.player.data.Statistics
@@ -29,9 +30,14 @@ class UnlockAchievementsUseCaseSpek : Spek({
                     player
                 ),
                 mock(),
+                UpdatePlayerStatsUseCase(
+                    TestUtil.playerRepoMock(
+                        player
+                    )
+                ),
                 mock()
             ).execute(
-                Params(player, eventType)
+                UnlockAchievementsUseCase.Params(player, eventType)
             )
 
         it("should unlock first completed quest") {
@@ -250,30 +256,6 @@ class UnlockAchievementsUseCaseSpek : Spek({
             achievements.`should contain`(Achievement.CONVERT_20_GEMS)
         }
 
-        it("should unlock reach level 10") {
-            val achievements = executeUseCase(
-                TestUtil.player().copy(
-                    level = 10,
-                    achievements = emptyList()
-                ),
-                eventType = Params.EventType.PlayerLeveledUp
-            )
-            achievements.size.`should be equal to`(1)
-            achievements.`should contain`(Achievement.REACH_LEVEL_10)
-        }
-
-        it("should unlock 1k life coins in inventory") {
-            val achievements = executeUseCase(
-                TestUtil.player().copy(
-                    coins = 1000,
-                    achievements = emptyList()
-                ),
-                eventType = Params.EventType.LifeCoinsIncreased
-            )
-            achievements.size.`should be equal to`(1)
-            achievements.`should contain`(Achievement.HAVE_1K_LIFE_COINS_IN_INVENTORY)
-        }
-
         it("should unlock invite friend") {
             val achievements = executeUseCase(
                 TestUtil.player().copy(
@@ -282,7 +264,7 @@ class UnlockAchievementsUseCaseSpek : Spek({
                         friendInvitedCount = 0
                     )
                 ),
-                eventType = Params.EventType.FriendInvited
+                eventType = Params.EventType.FriendshipAccepted
             )
             achievements.size.`should be equal to`(1)
             achievements.`should contain`(Achievement.INVITE_1_FRIEND)

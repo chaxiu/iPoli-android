@@ -404,7 +404,7 @@ class ProfileViewController :
                 0 -> ProfileInfoViewController(reducer.stateKey)
                 1 -> ProfilePostListViewController(reducer.stateKey, friendId)
                 2 -> ProfileFriendListViewController(reducer.stateKey)
-                3 -> ProfileChallengeListViewController(reducer.stateKey)
+                3 -> ProfileChallengeListViewController(reducer.stateKey, friendId)
                 else -> throw IllegalArgumentException("Unknown controller position $position")
             }
             router.setRoot(RouterTransaction.with(page))
@@ -422,7 +422,7 @@ class ProfileViewController :
             val page = when (position) {
                 0 -> ProfileInfoViewController(reducer.stateKey, friendId)
                 1 -> ProfilePostListViewController(reducer.stateKey, friendId)
-                2 -> ProfileChallengeListViewController(reducer.stateKey)
+                2 -> ProfileChallengeListViewController(reducer.stateKey, friendId)
                 else -> throw IllegalArgumentException("Unknown controller position $position")
             }
             router.setRoot(RouterTransaction.with(page))

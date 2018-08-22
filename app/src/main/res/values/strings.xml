@@ -1444,9 +1444,9 @@
     <string name="achievement_coins_in_inventory_level_3_desc">Have 10,000 coins in your inventory</string>
 
     <string name="achievement_invite_friend_name">Share the love</string>
-    <string name="achievement_invite_friend_level_1_desc">Invite a friend to join you on your journey in myPoli</string>
-    <string name="achievement_invite_friend_level_2_desc">Invite 5 friends to join you on your journey in myPoli</string>
-    <string name="achievement_invite_friend_level_3_desc">Invite 20 friends to join you on your journey in myPoli</string>
+    <string name="achievement_invite_friend_level_1_desc">Have a friend on your journey in myPoli</string>
+    <string name="achievement_invite_friend_level_2_desc">Have 5 friends on your journey in myPoli</string>
+    <string name="achievement_invite_friend_level_3_desc">Have 20 friends on your journey in myPoli</string>
 
     <string name="achievement_first_pet_item_equipped_name">Stylist</string>
     <string name="achievement_first_pet_item_equipped_desc">Equip your Pet with an item</string>

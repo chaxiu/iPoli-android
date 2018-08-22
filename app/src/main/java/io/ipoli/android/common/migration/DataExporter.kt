@@ -9,6 +9,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.WriteBatch
 import io.ipoli.android.Constants
+import io.ipoli.android.MyPoliApp
 import io.ipoli.android.challenge.persistence.FirestoreChallengeRepository
 import io.ipoli.android.common.ErrorLogger
 import io.ipoli.android.common.datetime.milliseconds
@@ -16,7 +17,6 @@ import io.ipoli.android.common.di.BackgroundModule
 import io.ipoli.android.common.persistence.BaseFirestoreRepository
 import io.ipoli.android.dailychallenge.data.persistence.FirestoreDailyChallengeRepository
 import io.ipoli.android.habit.persistence.FirestoreHabitRepository
-import io.ipoli.android.MyPoliApp
 import io.ipoli.android.player.data.Player
 import io.ipoli.android.player.persistence.FirestorePlayerRepository
 import io.ipoli.android.quest.Entity

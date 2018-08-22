@@ -1,7 +1,8 @@
 package io.ipoli.android.achievement.middleware
 
+import io.ipoli.android.MyPoliApp
 import io.ipoli.android.achievement.usecase.UnlockAchievementsUseCase
-import io.ipoli.android.achievement.usecase.UnlockAchievementsUseCase.Params.EventType.*
+import io.ipoli.android.achievement.usecase.UpdatePlayerStatsUseCase.Params.EventType.*
 import io.ipoli.android.challenge.add.EditChallengeAction
 import io.ipoli.android.challenge.show.ChallengeAction
 import io.ipoli.android.common.AppState
@@ -12,7 +13,7 @@ import io.ipoli.android.common.redux.Action
 import io.ipoli.android.common.redux.Dispatcher
 import io.ipoli.android.common.redux.MiddleWare
 import io.ipoli.android.common.view.CurrencyConverterAction
-import io.ipoli.android.MyPoliApp
+import io.ipoli.android.friends.invite.AcceptFriendshipAction
 import io.ipoli.android.pet.PetAction
 import io.ipoli.android.pet.store.PetStoreAction
 import io.ipoli.android.planday.PlanDayAction
@@ -35,6 +36,7 @@ import space.traversal.kapsule.required
 object AchievementProgressMiddleWare : MiddleWare<AppState>, Injects<BackgroundModule> {
 
     private val unlockAchievementsUseCase by required { unlockAchievementsUseCase }
+    private val playerRepository by required { playerRepository }
 
     override fun onCreate() {
         inject(MyPoliApp.backgroundModule(MyPoliApp.instance))
@@ -46,8 +48,7 @@ object AchievementProgressMiddleWare : MiddleWare<AppState>, Injects<BackgroundM
         action: Action
     ): MiddleWare.Result {
 
-        val player = state.dataState.player
-        if (player == null) {
+        if (state.dataState.player == null) {
             return MiddleWare.Result.Continue
         }
 
@@ -67,6 +68,9 @@ object AchievementProgressMiddleWare : MiddleWare<AppState>, Injects<BackgroundM
             is AgendaAction.UndoCompleteQuest,
             is DayViewAction.UndoCompleteQuest ->
                 QuestUncompleted
+
+            is PlanDayAction.StartDay ->
+                DayPlanned
 
             EditRepeatingQuestAction.SaveNew ->
                 RepeatingQuestCreated
@@ -92,6 +96,9 @@ object AchievementProgressMiddleWare : MiddleWare<AppState>, Injects<BackgroundM
             is PetAction.Feed ->
                 PetFed(a.food)
 
+            is PetAction.PetDied ->
+                PetDied
+
             HomeAction.FeedbackSent ->
                 FeedbackSent
 
@@ -104,13 +111,16 @@ object AchievementProgressMiddleWare : MiddleWare<AppState>, Injects<BackgroundM
             is PetAction.PetRevived ->
                 PetRevived
 
+            is AcceptFriendshipAction.Accept ->
+                FriendshipAccepted
+
             else -> null
         }
 
         eventType?.let {
             unlockAchievementsUseCase.execute(
                 UnlockAchievementsUseCase.Params(
-                    player = player,
+                    player = playerRepository.find()!!,
                     eventType = eventType
                 )
             )

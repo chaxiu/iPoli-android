@@ -2,6 +2,7 @@ package io.ipoli.android.common.job
 
 import android.content.Context
 import io.ipoli.android.MyPoliApp
+import io.ipoli.android.achievement.usecase.UpdatePlayerStatsUseCase
 import io.ipoli.android.common.di.BackgroundModule
 import io.ipoli.android.habit.usecase.UpdateHabitStreaksUseCase
 import io.ipoli.android.pet.usecase.LowerPetStatsUseCase
@@ -18,6 +19,7 @@ class ResetDayJob : FixedDailyJob(ResetDayJob.TAG) {
         val playerRepository by kap.required { playerRepository }
         val updateHabitStreaksUseCase by kap.required { updateHabitStreaksUseCase }
         val lowerPetStatsUseCase by kap.required { lowerPetStatsUseCase }
+        val updatePlayerStatsUseCase by kap.required { updatePlayerStatsUseCase }
         kap.inject(MyPoliApp.backgroundModule(context))
 
         val player = playerRepository.find()!!
@@ -29,7 +31,18 @@ class ResetDayJob : FixedDailyJob(ResetDayJob.TAG) {
             )
         )
 
-        lowerPetStatsUseCase.execute(LowerPetStatsUseCase.Params())
+        val oldPet = player.pet
+
+        val newPet = lowerPetStatsUseCase.execute(LowerPetStatsUseCase.Params())
+
+        if (oldPet.isDead != newPet.isDead) {
+            updatePlayerStatsUseCase.execute(
+                UpdatePlayerStatsUseCase.Params(
+                    player = playerRepository.find()!!,
+                    eventType = UpdatePlayerStatsUseCase.Params.EventType.PetDied
+                )
+            )
+        }
 
         return Result.SUCCESS
     }

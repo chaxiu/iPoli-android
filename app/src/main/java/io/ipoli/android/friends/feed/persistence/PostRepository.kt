@@ -3,11 +3,8 @@ package io.ipoli.android.friends.feed.persistence
 import android.arch.persistence.room.*
 import com.google.android.gms.tasks.Tasks
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.*
 import com.google.firebase.firestore.EventListener
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.ListenerRegistration
-import com.google.firebase.firestore.Query
-import com.google.firebase.firestore.QuerySnapshot
 import io.ipoli.android.achievement.Achievement
 import io.ipoli.android.common.ErrorLogger
 import io.ipoli.android.common.datetime.days
@@ -457,6 +454,8 @@ class AndroidPostRepository(
         val playerId = FirebaseAuth.getInstance().currentUser!!.uid
 
         val playerRef = playerRef(playerId)
+
+        playerRef.get(Source.SERVER)
 
         val friendIds = playerRef
             .collection("friends")

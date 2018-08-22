@@ -1,5 +1,6 @@
 package io.ipoli.android.habit.usecase
 
+import io.ipoli.android.common.ErrorLogger
 import io.ipoli.android.common.SimpleReward
 import io.ipoli.android.common.UseCase
 import io.ipoli.android.habit.data.Habit
@@ -47,13 +48,18 @@ class UndoCompleteHabitUseCase(
         }
 
         if (wasCompleted && habit.isGood) {
-            removeRewardFromPlayerUseCase.execute(
-                SimpleReward(
-                    coins = history[ced]!!.coins!!,
-                    experience = history[ced]!!.experience!!,
-                    bounty = Quest.Bounty.None
+
+            if(history[ced]!!.coins == null) {
+                ErrorLogger.log(IllegalStateException("Illegal undo habit: ${habit.history}, $ced, $resetDayTime, $dateTime"))
+            } else {
+                removeRewardFromPlayerUseCase.execute(
+                    SimpleReward(
+                        coins = history[ced]!!.coins!!,
+                        experience = history[ced]!!.experience!!,
+                        bounty = Quest.Bounty.None
+                    )
                 )
-            )
+            }
         }
 
         val currentStreak = habit.currentStreak

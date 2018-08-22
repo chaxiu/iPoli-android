@@ -28,9 +28,14 @@ sealed class ProfileAction : Action {
         override fun toMap() = mapOf("friendId" to friendId)
     }
 
+    data class LoadFriendChallenges(val friendId: String) : ProfileAction() {
+        override fun toMap() = mapOf("friendId" to friendId)
+    }
+
+
     object StartEdit : ProfileAction()
     object StopEdit : ProfileAction()
-    object LoadChallenges : ProfileAction()
+    object LoadPlayerChallenges : ProfileAction()
     object LoadFriends : ProfileAction()
     data class LoadPosts(val mapToViewModel: (Post) -> PostViewModel, val friendId: String?) :
         ProfileAction()
@@ -127,7 +132,7 @@ class ProfileReducer(reducerKey: String) : BaseViewStateReducer<ProfileViewState
                     type = ProfileViewState.StateType.EDIT_STOPPED
                 )
 
-            is ProfileAction.LoadChallenges -> {
+            is ProfileAction.LoadPlayerChallenges -> {
                 val player = state.dataState.player
                 when {
                     player == null -> subState.copy(
@@ -146,6 +151,12 @@ class ProfileReducer(reducerKey: String) : BaseViewStateReducer<ProfileViewState
                 }
 
             }
+
+            is DataLoadedAction.FriendChallengesChanged ->
+                subState.copy(
+                    type = CHALLENGE_LIST_DATA_CHANGED,
+                    challenges = action.challenges
+                )
 
             is DataLoadedAction.FriendsChanged ->
                 subState.copy(

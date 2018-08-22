@@ -1,6 +1,5 @@
 package io.ipoli.android.player.usecase
 
-import com.nhaarman.mockito_kotlin.doReturn
 import com.nhaarman.mockito_kotlin.mock
 import com.nhaarman.mockito_kotlin.reset
 import io.ipoli.android.TestUtil
@@ -9,7 +8,6 @@ import io.ipoli.android.pet.Pet
 import io.ipoli.android.pet.PetAvatar
 import io.ipoli.android.player.ExperienceForLevelGenerator
 import io.ipoli.android.player.LevelDownScheduler
-import io.ipoli.android.player.persistence.PlayerRepository
 import io.ipoli.android.quest.Quest
 import org.amshove.kluent.*
 import org.jetbrains.spek.api.Spek
@@ -40,11 +38,11 @@ class RemoveRewardFromPlayerUseCaseSpek : Spek({
 
         val levelDownScheduler = mock<LevelDownScheduler>()
 
-        val playerRepo = mock<PlayerRepository> {
-            on { find() } doReturn player
-        }
-
-        val useCase = RemoveRewardFromPlayerUseCase(playerRepo, levelDownScheduler)
+        val useCase = RemoveRewardFromPlayerUseCase(
+            TestUtil.playerRepoMock(player),
+            levelDownScheduler,
+            mock()
+        )
 
         beforeEachTest {
             reset(levelDownScheduler)

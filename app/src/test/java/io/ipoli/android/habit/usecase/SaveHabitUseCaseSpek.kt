@@ -49,7 +49,7 @@ class SaveHabitUseCaseSpek : Spek({
 
         it("should remove reward from player") {
             val removeRewardFromPlayerUseCaseMock = mock<RemoveRewardFromPlayerUseCase>()
-            val h = executeUseCase(
+            executeUseCase(
                 params = SaveHabitUseCase.Params(
                     id = "AAA",
                     timesADay = 2,
@@ -89,6 +89,81 @@ class SaveHabitUseCaseSpek : Spek({
             Verify on removeRewardFromPlayerUseCaseMock that removeRewardFromPlayerUseCaseMock.execute(
                 expectedReward
             ) was called
+        }
+
+        it("should not remove reward from player") {
+            val removeRewardFromPlayerUseCaseMock = mock<RemoveRewardFromPlayerUseCase>()
+            executeUseCase(
+                params = SaveHabitUseCase.Params(
+                    id = "AAA",
+                    timesADay = 3,
+                    name = "",
+                    color = Color.LIME,
+                    icon = Icon.DROP,
+                    days = DayOfWeek.values().toSet(),
+                    isGood = true,
+                    dateTime = LocalDateTime.of(LocalDate.now(), LocalTime.of(12, 46))
+                ),
+                habit = TestUtil.habit.copy(
+                    id = "AAA",
+                    days = DayOfWeek.values().toSet(),
+                    timesADay = 8,
+                    history = mapOf()
+                ),
+                player = TestUtil.player().copy(
+                    preferences = TestUtil.player().preferences.copy(
+                        resetDayTime = Time.at(12, 30)
+                    )
+                ),
+                removeRewardFromPlayerUseCase = removeRewardFromPlayerUseCaseMock
+            )
+
+            val expectedReward =
+                SimpleReward(10, 1, Quest.Bounty.None)
+            `Verify not called` on removeRewardFromPlayerUseCaseMock that removeRewardFromPlayerUseCaseMock.execute(
+                expectedReward
+            )
+        }
+
+        it("should not change reward for player") {
+            val removeRewardFromPlayerUseCaseMock = mock<RemoveRewardFromPlayerUseCase>()
+            val rewardPlayerUseCaseMock = mock<RewardPlayerUseCase>()
+            executeUseCase(
+                params = SaveHabitUseCase.Params(
+                    id = "AAA",
+                    timesADay = 2,
+                    name = "",
+                    color = Color.LIME,
+                    icon = Icon.DROP,
+                    days = DayOfWeek.values().toSet(),
+                    isGood = true,
+                    dateTime = LocalDateTime.of(LocalDate.now(), LocalTime.of(12, 46))
+                ),
+                habit = TestUtil.habit.copy(
+                    id = "AAA",
+                    days = DayOfWeek.values().toSet(),
+                    timesADay = 3,
+                    history = mapOf(
+                        LocalDate.now() to CompletedEntry(listOf(Time.atHours(12)))
+                    )
+                ),
+                player = TestUtil.player().copy(
+                    preferences = TestUtil.player().preferences.copy(
+                        resetDayTime = Time.at(0, 30)
+                    )
+                ),
+                removeRewardFromPlayerUseCase = removeRewardFromPlayerUseCaseMock,
+                rewardPlayerUseCase = rewardPlayerUseCaseMock
+            )
+
+            val expectedReward =
+                SimpleReward(10, 1, Quest.Bounty.None)
+            `Verify not called` on removeRewardFromPlayerUseCaseMock that removeRewardFromPlayerUseCaseMock.execute(
+                expectedReward
+            )
+            `Verify not called` on rewardPlayerUseCaseMock that rewardPlayerUseCaseMock.execute(
+                expectedReward
+            )
         }
     }
 

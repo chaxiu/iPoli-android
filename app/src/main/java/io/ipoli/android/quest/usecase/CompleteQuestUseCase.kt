@@ -92,9 +92,10 @@ open class CompleteQuestUseCase(
             val challenge = challengeRepository.findById(newQuest.challengeId!!)!!
             if (!challenge.isCompleted && challenge.sharingPreference == SharingPreference.FRIENDS) {
                 savePostsUseCase.execute(
-                    SavePostsUseCase.Params.QuestsComplete(
-                        listOf(newQuest),
-                        player
+                    SavePostsUseCase.Params.QuestFromChallengeComplete(
+                        quest = newQuest,
+                        challenge = challenge,
+                        player = player
                     )
                 )
             }

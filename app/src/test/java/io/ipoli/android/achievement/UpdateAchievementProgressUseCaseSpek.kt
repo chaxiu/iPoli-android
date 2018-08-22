@@ -57,7 +57,8 @@ class UpdateAchievementProgressUseCaseSpek : Spek({
             return UpdateAchievementProgressUseCase(
                 playerRepoMock,
                 calculateAwesomenessScoreUseCase,
-                calculateFocusDurationUseCase
+                calculateFocusDurationUseCase,
+                mock()
             ).execute(
                 UpdateAchievementProgressUseCase.Params(currentDate = currentDate)
             )

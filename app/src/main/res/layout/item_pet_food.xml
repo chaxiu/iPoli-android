@@ -26,7 +26,6 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="4dp"
         android:layout_marginTop="8dp"
-        android:drawableStart="@drawable/ic_gem_16dp"
         android:gravity="center"
         android:textAppearance="@style/TextAppearance.AppCompat.Body1"
         app:layout_constraintBottom_toBottomOf="parent"

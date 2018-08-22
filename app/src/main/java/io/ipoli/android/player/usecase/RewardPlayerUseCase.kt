@@ -1,5 +1,7 @@
 package io.ipoli.android.player.usecase
 
+import io.ipoli.android.achievement.usecase.UnlockAchievementsUseCase
+import io.ipoli.android.achievement.usecase.UpdatePlayerStatsUseCase
 import io.ipoli.android.common.Reward
 import io.ipoli.android.common.UseCase
 import io.ipoli.android.player.LevelUpScheduler
@@ -13,7 +15,8 @@ import io.ipoli.android.quest.Quest
  */
 open class RewardPlayerUseCase(
     private val playerRepository: PlayerRepository,
-    private val levelUpScheduler: LevelUpScheduler
+    private val levelUpScheduler: LevelUpScheduler,
+    private val unlockAchievementsUseCase: UnlockAchievementsUseCase
 ) : UseCase<Reward, Player> {
 
     override fun execute(parameters: Reward): Player {
@@ -42,10 +45,17 @@ open class RewardPlayerUseCase(
                 pet = newPet,
                 inventory = inventory
             )
+
         if (newPlayer.level != player.level) {
             levelUpScheduler.schedule(newPlayer.level)
         }
-        playerRepository.save(newPlayer)
-        return newPlayer
+        val p = playerRepository.save(newPlayer)
+        unlockAchievementsUseCase.execute(
+            UnlockAchievementsUseCase.Params(
+                player = p,
+                eventType = UpdatePlayerStatsUseCase.Params.EventType.ExperienceIncreased(reward.experience.toLong())
+            )
+        )
+        return p
     }
 }

@@ -33,10 +33,13 @@ import org.threeten.bp.LocalDate
 class ProfileChallengeListViewController(args: Bundle? = null) :
     BaseViewController<ProfileAction, ProfileViewState>(args) {
 
+    private var friendId: String? = null
+
     override var stateKey = ""
 
-    constructor(reducerKey: String) : this() {
+    constructor(reducerKey: String, friendId: String?) : this() {
         this.stateKey = reducerKey
+        this.friendId = friendId
     }
 
     override fun onCreateView(
@@ -53,7 +56,9 @@ class ProfileChallengeListViewController(args: Bundle? = null) :
         return view
     }
 
-    override fun onCreateLoadAction() = ProfileAction.LoadChallenges
+    override fun onCreateLoadAction() =
+        if (friendId == null) ProfileAction.LoadPlayerChallenges
+        else ProfileAction.LoadFriendChallenges(friendId!!)
 
     override fun colorStatusBars() {
 

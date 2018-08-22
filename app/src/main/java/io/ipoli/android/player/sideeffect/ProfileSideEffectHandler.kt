@@ -32,6 +32,7 @@ object ProfileSideEffectHandler : AppSideEffectHandler() {
     private val friendRepository by required { friendRepository }
     private val playerRepository by required { playerRepository }
     private val postRepository by required { postRepository }
+    private val challengeRepository by required { challengeRepository }
     private val executor by required { executorService }
     private val savePostReactionUseCase by required { savePostReactionUseCase }
     private val internetConnectionChecker by required { internetConnectionChecker }
@@ -144,6 +145,16 @@ object ProfileSideEffectHandler : AppSideEffectHandler() {
                             ?: FirebaseAuth.getInstance().currentUser!!.uid,
                         postId = s.currentPostId!!,
                         reactionType = action.reaction
+                    )
+                )
+            }
+
+            is ProfileAction.LoadFriendChallenges -> {
+                dispatch(
+                    DataLoadedAction.FriendChallengesChanged(
+                        challengeRepository.findForFriend(
+                            action.friendId
+                        )
                     )
                 )
             }

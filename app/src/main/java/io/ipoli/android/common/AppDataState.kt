@@ -132,6 +132,8 @@ sealed class DataLoadedAction : Action {
         val quests: List<Quest>?,
         val challenges: List<Challenge>?
     ) : DataLoadedAction()
+
+    data class FriendChallengesChanged(val challenges : List<Challenge>) : DataLoadedAction()
 }
 
 data class AppDataState(

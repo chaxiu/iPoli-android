@@ -524,7 +524,7 @@ class CreateAchievementItemsUseCase :
         ) : AchievementItem(
             progress = progress,
             levelProgressRequirements = mapOf(
-                1 to 1
+                1 to 100
             ),
             currentLevel = currentLevel
         )

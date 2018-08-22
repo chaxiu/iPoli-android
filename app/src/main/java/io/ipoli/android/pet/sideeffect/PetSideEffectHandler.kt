@@ -36,6 +36,9 @@ object PetSideEffectHandler : AppSideEffectHandler() {
                     is Result.TooExpensive -> dispatch(PetAction.FoodTooExpensive)
                     is Result.PetFed -> {
                         val pet = result.player.pet
+                        if(pet.isDead) {
+                            dispatch(PetAction.PetDied)
+                        }
                         dispatch(PetAction.PetFed(pet, action.food, result.wasFoodTasty))
                     }
                 }

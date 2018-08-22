@@ -425,7 +425,7 @@ fun toPostViewModel(
             val message = when {
                 post.data.streak == 1 -> "Completed Daily Challenge"
                 post.data.streak < post.data.bestStreak -> "Completed Daily Challenge ${post.data.streak} times in a row"
-                else -> "New Daily Challenge best streak - ${post.data.bestStreak} times in a row"
+                else -> "New Daily Challenge best streak: ${post.data.bestStreak} times in a row"
             }
             createSimpleViewModel(
                 post,
@@ -669,7 +669,7 @@ fun toPostViewModel(
                     val newBestStreak = context.stringRes(R.string.feed_best_streak_habit)
                     val timesInARow = context.stringRes(R.string.feed_times_in_a_row)
                     val m =
-                        "$newBestStreak ${post.data.habitName} - ${post.data.bestStreak} $timesInARow"
+                        "$newBestStreak ${post.data.habitName}: ${post.data.bestStreak} $timesInARow"
                     context.lightenText(m, newBestStreak, timesInARow)
                 }
             }

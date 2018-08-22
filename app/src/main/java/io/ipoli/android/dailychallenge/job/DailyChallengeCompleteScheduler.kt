@@ -3,14 +3,15 @@ package io.ipoli.android.dailychallenge.job
 import com.evernote.android.job.Job
 import com.evernote.android.job.JobRequest
 import com.evernote.android.job.util.support.PersistableBundleCompat
+import io.ipoli.android.MyPoliApp
 import io.ipoli.android.achievement.usecase.UnlockAchievementsUseCase
+import io.ipoli.android.achievement.usecase.UpdatePlayerStatsUseCase
 import io.ipoli.android.common.SimpleReward
 import io.ipoli.android.common.datetime.seconds
 import io.ipoli.android.common.di.BackgroundModule
 import io.ipoli.android.common.view.asThemedWrapper
 import io.ipoli.android.dailychallenge.DailyChallengeCompletePopup
 import io.ipoli.android.friends.usecase.SavePostsUseCase
-import io.ipoli.android.MyPoliApp
 import io.ipoli.android.quest.Quest
 import kotlinx.coroutines.experimental.CommonPool
 import kotlinx.coroutines.experimental.android.UI
@@ -50,7 +51,7 @@ class DailyChallengeCompleteJob : Job() {
         unlockAchievement.execute(
             UnlockAchievementsUseCase.Params(
                 playerRepository.find()!!,
-                UnlockAchievementsUseCase.Params.EventType.DailyChallengeCompleted
+                UpdatePlayerStatsUseCase.Params.EventType.DailyChallengeCompleted
             )
         )
 

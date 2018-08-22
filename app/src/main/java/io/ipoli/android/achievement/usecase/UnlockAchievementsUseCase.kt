@@ -2,11 +2,9 @@ package io.ipoli.android.achievement.usecase
 
 import io.ipoli.android.achievement.Achievement
 import io.ipoli.android.achievement.job.ShowUnlockedAchievementsScheduler
-import io.ipoli.android.achievement.usecase.UnlockAchievementsUseCase.Params.EventType.*
 import io.ipoli.android.common.UseCase
 import io.ipoli.android.common.datetime.Time
 import io.ipoli.android.friends.usecase.SavePostsUseCase
-import io.ipoli.android.pet.Food
 import io.ipoli.android.player.data.Player
 import io.ipoli.android.player.data.Statistics
 import io.ipoli.android.player.persistence.PlayerRepository
@@ -16,150 +14,23 @@ import org.threeten.bp.LocalDate
  * Created by Polina Zhelyazkova <polina@mypoli.fun>
  * on 6/7/18.
  */
-class UnlockAchievementsUseCase(
+open class UnlockAchievementsUseCase(
     private val playerRepository: PlayerRepository,
     private val showUnlockedAchievementsScheduler: ShowUnlockedAchievementsScheduler,
+    private val updatePlayerStatsUseCase: UpdatePlayerStatsUseCase,
     private val savePostsUseCase: SavePostsUseCase
 ) : UseCase<UnlockAchievementsUseCase.Params, List<Achievement>> {
 
     override fun execute(parameters: Params): List<Achievement> {
 
-        val player = parameters.player
-        val stats = player.statistics
-        val currentDate = parameters.currentDate
-
-        val newStats = when (parameters.eventType) {
-            QuestCompleted -> {
-
-                val questCompletedStreak = stats.questCompletedStreak
-                stats.copy(
-                    questCompletedCount = stats.questCompletedCount + 1,
-                    questCompletedCountForToday = stats.questCompletedCountForToday + 1,
-                    questCompletedStreak = if (currentDate != questCompletedStreak.lastDate) {
-                        questCompletedStreak.copy(
-                            count = questCompletedStreak.count + 1,
-                            lastDate = currentDate
-                        )
-                    } else {
-                        questCompletedStreak
-                    }
-
-                )
-            }
-
-            QuestUncompleted ->
-                stats.copy(
-                    questCompletedCountForToday = stats.questCompletedCountForToday - 1
-                )
-
-            DailyChallengeCompleted -> {
-                val dcCompleteStreak = stats.dailyChallengeCompleteStreak
-                val currentDcStreak = if (currentDate != dcCompleteStreak.lastDate)
-                    dcCompleteStreak.copy(
-                        count = dcCompleteStreak.count + 1,
-                        lastDate = currentDate
-                    )
-                else dcCompleteStreak
-
-                stats.copy(
-                    dailyChallengeCompleteStreak = currentDcStreak,
-                    dailyChallengeBestStreak =
-                    if (stats.dailyChallengeBestStreak < dcCompleteStreak.count)
-                        dcCompleteStreak.count
-                    else stats.dailyChallengeBestStreak
-                )
-            }
-
-            DayPlanned -> {
-                val dayPlanStreak = stats.planDayStreak
-                stats.copy(
-                    planDayStreak = if (currentDate != dayPlanStreak.lastDate) {
-                        dayPlanStreak.copy(
-                            count = dayPlanStreak.count + 1,
-                            lastDate = currentDate
-                        )
-                    } else {
-                        dayPlanStreak
-                    }
-                )
-            }
-
-            RepeatingQuestCreated ->
-                stats.copy(
-                    repeatingQuestCreatedCount = stats.repeatingQuestCreatedCount + 1
-                )
-
-            ChallengeCompleted ->
-                stats.copy(
-                    challengeCompletedCount = stats.challengeCompletedCount + 1
-                )
-
-            ChallengeCreated ->
-                stats.copy(
-                    challengeCreatedCount = stats.challengeCreatedCount + 1
-                )
-
-            is GemsConverted ->
-                stats.copy(
-                    gemConvertedCount = stats.gemConvertedCount + parameters.eventType.gems
-                )
-
-            is FriendInvited ->
-                stats.copy(
-                    friendInvitedCount = stats.friendInvitedCount + 1
-                )
-
-            is ExperienceIncreased ->
-                stats.copy(
-                    experienceForToday = stats.experienceForToday + parameters.eventType.value
-                )
-
-            PetItemEquipped ->
-                stats.copy(
-                    petItemEquippedCount = stats.petItemEquippedCount + 1
-                )
-
-            AvatarChanged ->
-                stats.copy(
-                    avatarChangeCount = stats.avatarChangeCount + 1
-                )
-
-            PetChanged ->
-                stats.copy(
-                    petChangeCount = stats.petChangeCount + 1
-                )
-
-            is PetFed ->
-                stats.copy(
-                    petFedCount = stats.petFedCount + 1,
-                    petFedWithPoopCount = if (parameters.eventType.food == Food.POOP)
-                        stats.petFedWithPoopCount + 1
-                    else stats.petFedWithPoopCount
-                )
-
-            FeedbackSent ->
-                stats.copy(
-                    feedbackSentCount = stats.feedbackSentCount + 1
-                )
-
-            BecomeMember ->
-                stats.copy(
-                    joinMembershipCount = stats.joinMembershipCount + 1
-                )
-
-            PowerUpActivated ->
-                stats.copy(
-                    powerUpActivatedCount = stats.powerUpActivatedCount + 1
-                )
-
-            PetRevived ->
-                stats.copy(
-                    petRevivedCount = stats.petRevivedCount + 1
-                )
-
-            else -> stats
-        }
-
+        val player = if (parameters.eventType == null) parameters.player
+        else updatePlayerStatsUseCase.execute(
+            UpdatePlayerStatsUseCase.Params(
+                player = parameters.player,
+                eventType = parameters.eventType,
+                currentDate = parameters.currentDate
+            )
+        )
 
         val unlockedAchievements = player.achievements.map { it.achievement }
         val newAchievements =
@@ -167,7 +38,7 @@ class UnlockAchievementsUseCase(
                 shouldUnlock(
                     player,
                     it,
-                    newStats
+                    player.statistics
                 )
             }
 
@@ -178,16 +49,13 @@ class UnlockAchievementsUseCase(
                         Player.UnlockedAchievement(
                             it, Time.now(), LocalDate.now()
                         )
-                    },
-                    statistics = newStats
+                    }
                 )
             )
             showUnlockedAchievementsScheduler.schedule(newAchievements)
             newAchievements.forEach {
                 savePostsUseCase.execute(SavePostsUseCase.Params.AchievementUnlocked(it, p))
             }
-        } else if (newStats != stats) {
-            playerRepository.saveStatistics(newStats)
         }
 
         return newAchievements
@@ -338,31 +206,8 @@ class UnlockAchievementsUseCase(
 
     data class Params(
         val player: Player,
-        val eventType: EventType? = null,
+        val eventType: UpdatePlayerStatsUseCase.Params.EventType? = null,
         val currentDate: LocalDate = LocalDate.now()
-    ) {
-        sealed class EventType(val count: Int = 1) {
-            object QuestCompleted : EventType()
-            object QuestUncompleted : EventType()
-            object DailyChallengeCompleted : EventType()
-            object RepeatingQuestCreated : EventType()
-            object ChallengeCompleted : EventType()
-            object ChallengeCreated : EventType()
-            object DayPlanned : EventType()
-            data class GemsConverted(val gems: Int) : EventType(gems)
-            object PlayerLeveledUp : EventType()
-            object LifeCoinsIncreased : EventType()
-            object FriendInvited : EventType()
-            data class ExperienceIncreased(val value: Long) : EventType()
-            object PetItemEquipped : EventType()
-            object AvatarChanged : EventType()
-            object PetChanged : EventType()
-            data class PetFed(val food: Food) : EventType()
-            object FeedbackSent : EventType()
-            object BecomeMember : EventType()
-            object PowerUpActivated : EventType()
-            object PetRevived : EventType()
-        }
-    }
+    )
 
 }

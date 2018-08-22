@@ -854,10 +854,10 @@ class PetViewController(args: Bundle? = null) :
                 foodPrice.text = "x" + vm.quantity.toString()
                 foodPrice.setCompoundDrawables(null, null, null, null)
             } else {
-                foodPrice.text = " x ${vm.price.quantity}"
+                foodPrice.text = "${vm.price.quantity} = 1"
                 foodPrice.setCompoundDrawablesWithIntrinsicBounds(
-                    ContextCompat.getDrawable(holder.itemView.context, R.drawable.ic_gem_16dp),
-                    null, null, null
+                    null,
+                    null, ContextCompat.getDrawable(holder.itemView.context, R.drawable.ic_gem_16dp), null
                 )
             }
             holder.itemView.setOnClickListener {

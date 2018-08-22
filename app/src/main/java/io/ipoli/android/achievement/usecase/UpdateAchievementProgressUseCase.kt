@@ -2,6 +2,7 @@ package io.ipoli.android.achievement.usecase
 
 import io.ipoli.android.Constants
 import io.ipoli.android.common.UseCase
+import io.ipoli.android.friends.persistence.FriendRepository
 import io.ipoli.android.pet.PetState
 import io.ipoli.android.planday.usecase.CalculateAwesomenessScoreUseCase
 import io.ipoli.android.planday.usecase.CalculateFocusDurationUseCase
@@ -12,7 +13,8 @@ import org.threeten.bp.LocalDate
 class UpdateAchievementProgressUseCase(
     private val playerRepository: PlayerRepository,
     private val calculateAwesomenessScoreUseCase: CalculateAwesomenessScoreUseCase,
-    private val calculateFocusDurationUseCase: CalculateFocusDurationUseCase
+    private val calculateFocusDurationUseCase: CalculateFocusDurationUseCase,
+    private val friendRepository: FriendRepository
 ) :
     UseCase<UpdateAchievementProgressUseCase.Params, Statistics> {
 
@@ -72,7 +74,14 @@ class UpdateAchievementProgressUseCase(
                 stats.planDayStreak
             }
 
+        val friendCount = try {
+            friendRepository.findAll().size.toLong()
+        } catch (e: Throwable) {
+            stats.friendInvitedCount
+        }
+
         val newStats = stats.copy(
+            friendInvitedCount = friendCount,
             questCompletedCountForToday = 0,
             questCompletedStreak = newQuestCompleteStreak,
             dailyChallengeCompleteStreak = newDailyChallengeCompleteStreak,

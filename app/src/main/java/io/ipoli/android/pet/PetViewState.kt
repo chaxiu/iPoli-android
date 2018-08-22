@@ -29,6 +29,7 @@ sealed class PetAction : Action {
     object ReviveTooExpensive : PetAction()
     object PetRevived : PetAction()
     object FoodTooExpensive : PetAction()
+    object PetDied : PetAction()
 
     data class RenamePet(val name: String) : PetAction() {
         override fun toMap() = mapOf("name" to name)
