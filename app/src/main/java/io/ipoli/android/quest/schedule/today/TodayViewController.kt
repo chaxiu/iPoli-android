@@ -114,6 +114,7 @@ class TodayViewController(args: Bundle? = null) :
 
             TodayViewState.StateType.QUESTS_CHANGED -> {
                 (view.questItems.adapter as TodayItemAdapter).updateAll(state.questItemViewModels)
+                (view.completedQuests.adapter as CompletedQuestAdapter).updateAll(state.completedQuestViewModels)
             }
 
             else -> {
@@ -422,7 +423,16 @@ class TodayViewController(args: Bundle? = null) :
         }
     }
 
-    data class CompletedQuestViewModel(override val id: String) : RecyclerViewViewModel
+    data class CompletedQuestViewModel(
+        override val id: String,
+        val name: String,
+        val tags: List<TagViewModel>,
+        val startTime: String,
+        @ColorRes val color: Int,
+        val icon: IIcon,
+        val isRepeating: Boolean,
+        val isFromChallenge: Boolean
+    ) : RecyclerViewViewModel
 
     inner class CompletedQuestAdapter :
         BaseRecyclerViewAdapter<CompletedQuestViewModel>(R.layout.item_agenda_quest) {
@@ -432,7 +442,45 @@ class TodayViewController(args: Bundle? = null) :
             view: View,
             holder: SimpleViewHolder
         ) {
+            view.questName.text = vm.name
 
+            view.questIcon.backgroundTintList =
+                ColorStateList.valueOf(colorRes(vm.color))
+            view.questIcon.setImageDrawable(listItemIcon(vm.icon))
+
+            if (vm.tags.isNotEmpty()) {
+                view.questTagName.visible()
+                renderTag(view, vm.tags.first())
+            } else {
+                view.questTagName.gone()
+            }
+
+            view.questStartTime.text = vm.startTime
+
+            view.questRepeatIndicator.visibility =
+                if (vm.isRepeating) View.VISIBLE else View.GONE
+            view.questChallengeIndicator.visibility =
+                if (vm.isFromChallenge) View.VISIBLE else View.GONE
+        }
+
+        private fun renderTag(view: View, tag: TagViewModel) {
+            view.questTagName.text = tag.name
+            TextViewCompat.setTextAppearance(
+                view.questTagName,
+                R.style.TextAppearance_AppCompat_Caption
+            )
+
+            val indicator = view.questTagName.compoundDrawablesRelative[0] as GradientDrawable
+            indicator.mutate()
+            val size = ViewUtils.dpToPx(8f, view.context).toInt()
+            indicator.setSize(size, size)
+            indicator.setColor(colorRes(tag.color))
+            view.questTagName.setCompoundDrawablesRelativeWithIntrinsicBounds(
+                indicator,
+                null,
+                null,
+                null
+            )
         }
     }
 
@@ -495,6 +543,31 @@ class TodayViewController(args: Bundle? = null) :
                     isBestStreak = it.isBestStreak,
                     progress = it.completedCount,
                     maxProgress = habit.timesADay
+                )
+            }
+
+    private val TodayViewState.completedQuestViewModels: List<CompletedQuestViewModel>
+        get() =
+            quests!!.complete.map {
+                CompletedQuestViewModel(
+                    id = it.id,
+                    name = it.name,
+                    tags = it.tags.map { t ->
+                        TagViewModel(
+                            t.name,
+                            AndroidColor.valueOf(t.color.name).color500
+                        )
+                    },
+                    startTime = QuestStartTimeFormatter.formatWithDuration(
+                        it,
+                        activity!!,
+                        shouldUse24HourFormat
+                    ),
+                    color = R.color.md_grey_500,
+                    icon = it.icon?.let { ic -> AndroidIcon.valueOf(ic.name).icon }
+                        ?: Ionicons.Icon.ion_android_clipboard,
+                    isRepeating = it.isFromRepeatingQuest,
+                    isFromChallenge = it.isFromChallenge
                 )
             }
 }
