@@ -170,8 +170,21 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
+            <TextView
+                style="@style/SectionTitle"
+                android:text="@string/habits" />
+
             <android.support.v7.widget.RecyclerView
                 android:id="@+id/habitItems"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                style="@style/SectionTitle"
+                android:text="@string/completed" />
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/completedQuests"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
         </LinearLayout>

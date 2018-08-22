@@ -25,8 +25,10 @@ import io.ipoli.android.R
 import io.ipoli.android.common.ViewUtils
 import io.ipoli.android.common.redux.android.ReduxViewController
 import io.ipoli.android.common.view.*
+import io.ipoli.android.common.view.recyclerview.BaseRecyclerViewAdapter
 import io.ipoli.android.common.view.recyclerview.MultiViewRecyclerViewAdapter
 import io.ipoli.android.common.view.recyclerview.RecyclerViewViewModel
+import io.ipoli.android.common.view.recyclerview.SimpleViewHolder
 import kotlinx.android.synthetic.main.controller_today.view.*
 import kotlinx.android.synthetic.main.item_agenda_quest.view.*
 import kotlinx.android.synthetic.main.item_habit_list.view.*
@@ -97,6 +99,10 @@ class TodayViewController(args: Bundle? = null) :
                 }
         }
 
+        view.completedQuests.layoutManager = LinearLayoutManager(view.context)
+        view.completedQuests.isNestedScrollingEnabled = false
+        view.completedQuests.adapter = CompletedQuestAdapter()
+
         view.backdropTransparentColor.background.alpha = (255f * 0.8).toInt()
 
         return view
@@ -111,7 +117,8 @@ class TodayViewController(args: Bundle? = null) :
                 (view.habitItems.adapter as HabitListAdapter).updateAll(state.habitItemViewModels)
             }
 
-            else -> {}
+            else -> {
+            }
         }
 
         (view.questItems.adapter as TodayItemAdapter).updateAll(
@@ -488,6 +495,21 @@ class TodayViewController(args: Bundle? = null) :
             })
             completeAnim.start()
         }
+    }
+
+    data class CompletedQuestViewModel(override val id: String) : RecyclerViewViewModel
+
+    inner class CompletedQuestAdapter :
+        BaseRecyclerViewAdapter<CompletedQuestViewModel>(R.layout.item_agenda_quest) {
+        
+        override fun onBindViewModel(
+            vm: CompletedQuestViewModel,
+            view: View,
+            holder: SimpleViewHolder
+        ) {
+
+        }
+
     }
 
     private val TodayViewState.habitItemViewModels: List<HabitItemViewModel.HabitItem>
